@@ -78,6 +78,7 @@ const myForm = new EgoForm({
 | `form__control` | This is a control element. It could be either an input, a select, a textarea, etc. |
 | `form__error` | This is the element which will be used to display error messages for a specific field. |  
 <br>
+
 ### Customizable Classes
 | Name | Default | Description |
 | --- | --- | ----------- |
@@ -89,6 +90,7 @@ const myForm = new EgoForm({
 | *formSubmittingState* | `--submitting` | This class is added to the form while it's being submited. |  
 | *buttonSubmittingState* | `--loading` | This class is added to the submit button while the form is being submited. |
 <br>
+
 ### Options
 | Name | Description | Accepted values |
 | --- | ----------- | ----------- |
@@ -99,6 +101,7 @@ const myForm = new EgoForm({
 | *fieldGroups* | Use this option to group field inside the body of the request. | An object containing key-value pairs, where the key is the name of the group and the value an array listing the field names.
 | *classes* | You can use this option to customize some classes to match your own. | An object containig the replaced classnames. See [customizable classes](#customizable-classes).
 <br>
+
 ### Validation:
 In order to use validations, you must set the correct data type for each field. You can do so by adding a `type` data attribute to the field element, e.g; `<div class="form__field" data-type="text">`. This attribute will be used by the validator to run certain tests. Here's a list of the different available data types:
 | Name | Description | Extra attributes |
