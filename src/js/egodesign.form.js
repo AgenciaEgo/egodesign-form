@@ -1,4 +1,4 @@
-import { vanillaFade, isInViewport } from './modules/tools';
+import { vanillaFade, isInViewport, getParentByClassName } from './modules/tools';
 import EgoFormValidator from './modules/ValidationClass';
 
 export default class EgoForm {
@@ -254,16 +254,29 @@ export default class EgoForm {
         }
     }
 
-    filterNumber(value) {
-        let reg = /[^0-9]/g;
-        return value.replace(reg, '');
+    filterNumber(value, ignoreList = []) {
+        const ignore = ignoreList.join('');
+        const reg = new RegExp("[^" + ignore + "0-9]", "g");
+        return value.toString().replace(reg, '');
     }
 
-    filterMoneyAmount(num, currency = '$') {
+    filterFormattedQuantity(num, thousands = '.', decimals = ',', decimalSteps) {
+        const sliced = decimals ? num.toString().split(decimals) : [num];
+        const root = sliced[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousands);
+
+        let fullNumber = '';
+        if (decimalSteps > 0 && sliced[1] && sliced[1].length) {
+            fullNumber = root + decimals + sliced[1].slice(0, decimalSteps);
+        }
+        else fullNumber = root;
+
+        return fullNumber;
+    }
+
+    filterMoneyAmount(num, currency = '$', thousands = '.', decimals = ',', decimalSteps) {
         if (!num || num == currency) return '';
-        let result = this.filterNumber(num)
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        let result = this.filterNumber(num, [decimals || '']);
+        result = this.filterFormattedQuantity(result, thousands, decimals, decimalSteps);
         return `${currency} ${result}`;
     }
     
@@ -329,23 +342,46 @@ export default class EgoForm {
         // Filter number input
         this.form.querySelectorAll('.form__field.--number input')
             .forEach(element => {
-                element.addEventListener('input', () => {
-                    element.value = this.filterNumber(element.value);
-                });
-                element.addEventListener('paste', () => {
-                    element.value = this.filterNumber(element.value);
+                const mainClass = this;
+                const field = getParentByClassName({element: element, className: 'form__field'});
+                const thousandsSep = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : null;
+                const decimalsSep = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
+                const decimals = field && field.dataset.decimals ? field.dataset.decimals : '';
+
+                function resetBumberField() {
+                    element.value = mainClass.filterNumber(element.value, [decimalsSep]);
+                }
+
+                element.addEventListener('focus', resetBumberField);
+                element.addEventListener('input', resetBumberField);
+                element.addEventListener('paste', resetBumberField);
+                element.addEventListener('blur', () => {
+                    element.value = (thousandsSep) ?
+                        mainClass.filterFormattedQuantity(element.value, thousandsSep, decimalsSep, parseInt(decimals))
+                        : 
+                        mainClass.filterNumber(element.value);
                 });
             });
         
         // Filter money input
         this.form.querySelectorAll('.form__field.--money-amount input')
             .forEach(element => {
-                const currency = element.dataset.currency ? element.dataset.currency : '$';
-                element.addEventListener('input', () => {
-                    element.value = this.filterMoneyAmount(element.value, currency);
-                });
-                element.addEventListener('paste', () => {
-                    element.value = this.filterMoneyAmount(element.value, currency);
+                const mainClass = this;
+                const field = getParentByClassName({element: element, className: 'form__field'});
+                const currency = field && field.dataset.currency ? field.dataset.currency : '$';
+                const thousandsSep = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '.';
+                const decimalsSep = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
+                const decimals = field && field.dataset.decimals ? field.dataset.decimals : '';
+
+                function resetMoneyField() {
+                    element.value = mainClass.filterNumber(element.value, [decimalsSep]);
+                }
+
+                element.addEventListener('focus',resetMoneyField);
+                element.addEventListener('input', resetMoneyField);
+                element.addEventListener('paste', resetMoneyField);
+                element.addEventListener('blur', () => {
+                    element.value = this.filterMoneyAmount(element.value, currency, thousandsSep, decimalsSep, parseInt(decimals));
                 });
             });
 

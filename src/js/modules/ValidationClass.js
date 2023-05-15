@@ -14,20 +14,20 @@ export default class EgoFormValidator {
 
     validateField(field) {
         const type = field.dataset.type,
-            isRequired = field.classList.contains(this.classes.requiredField),
+            isMultipleChoice = ['radio', 'checkbox'].includes(type),
             isRequiredIfFilled = field.classList.contains(this.classes.requiredIfFilledField),
             errorElement = field.querySelector('.form__error'),
-            control = ['radio', 'checkbox'].includes(type) ? 
-                field.querySelector('.form__control:checked') 
-                : field.querySelector('.form__control'),
+            control = field.querySelector('.form__control'),
+            controlCheked = isMultipleChoice ? field.querySelector('.form__control:checked') : null,
             controlName = control ? control.getAttribute('name') : '',
             customTypes = Object.keys(this.customValidations);
 
+        if (controlName == 'name') console.log(isMultipleChoice, controlCheked, control.value);
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
         
-        if (!control.value) {
+        if ((isMultipleChoice && !controlCheked) || !control.value) {
             if (!isRequiredIfFilled) {
                 this.displayFieldError(control, field, errorElement);
                 if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
