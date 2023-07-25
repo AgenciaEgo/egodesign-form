@@ -12,6 +12,7 @@ export default class EgoForm {
         serializerIgnoreList,
         customValidations,
         customValidationMessages,
+        onStepChange, 
         onSubmitStart, 
         onSubmitEnd, 
         onSuccess, 
@@ -43,6 +44,7 @@ export default class EgoForm {
             classes: this.classes,
             customValidationMessages: customValidationMessages || null,
         });
+        this.onStepChange = onStepChange || false;
         this.onSubmitStart = onSubmitStart || false;
         this.onSubmitEnd = onSubmitEnd || false;
         this.onSuccess = onSuccess || false;
@@ -222,6 +224,7 @@ export default class EgoForm {
                                         this.stepChanging = false;
                                         this.currentStepOptional = step === 'optional';
                                         this.currentStep = parseInt(nextStepNumber);
+                                        if (typeof this.onStepChange == 'function') this.onStepChange(current, nextStepNumber);
                                     }
                                 });
                             }
