@@ -13,6 +13,7 @@ export default class EgoForm {
         customValidations,
         customValidationMessages,
         onStepChange, 
+        onValidationError, 
         onSubmitStart, 
         onSubmitEnd, 
         onSuccess, 
@@ -44,6 +45,7 @@ export default class EgoForm {
             classes: this.classes,
             customValidationMessages: customValidationMessages || null,
         });
+        this.onValidationError = onValidationError || false;
         this.onStepChange = onStepChange || false;
         this.onSubmitStart = onSubmitStart || false;
         this.onSubmitEnd = onSubmitEnd || false;
@@ -71,13 +73,20 @@ export default class EgoForm {
 
         // Validate each required field
         this.isValid = true;
+        const invalidFields = [];
         this.form.querySelectorAll(`.${this.classes.requiredField}, .${this.classes.requiredIfFilledField}`).forEach(field => {
             const fieldValid = this.validator.validateField(field);
-            if (!fieldValid) this.isValid = false;
+            if (!fieldValid) {
+                invalidFields.push(field.querySelector('.form__control')?.name);
+                this.isValid = false;
+            }
         });
 
         if (!this.isValid) {
             this.submittingForm(false);
+            if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields);
+            if (this.debug) this.showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
+
             if (this.scrollOnError) {
                 const firstInvalidField = this.form.querySelector('.form__field.--has-error');
                 if (!isInViewport(firstInvalidField)) firstInvalidField.scrollIntoView({behavior: 'smooth'});

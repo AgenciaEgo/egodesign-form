@@ -1,6 +1,6 @@
 {
     "name": "@egodesign/form",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "description": "JS Form component",
     "module": "dist/js/egodesign.form.esm.min.js",
     "browser": "dist/js/egodesign.form.umd.min.js",

@@ -8,7 +8,7 @@ export default class EgoFormValidator {
         customValidationMessages
     }) {
         this.customValidations = customValidations;
-        this.validationMessages = customValidationMessages || validationMessages;
+        this.validationMessages = {...validationMessages, ...customValidationMessages} || validationMessages;
         this.classes = classes;
     }
 
@@ -21,8 +21,6 @@ export default class EgoFormValidator {
             controlCheked = isMultipleChoice ? field.querySelector('.form__control:checked') : null,
             controlName = control ? control.getAttribute('name') : '',
             customTypes = Object.keys(this.customValidations);
-
-        if (controlName == 'name') console.log(isMultipleChoice, controlCheked, control.value);
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
