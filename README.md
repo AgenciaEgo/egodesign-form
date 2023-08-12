@@ -1,5 +1,5 @@
 # @egodesign/form
-A lightweight Javascript component to fully validate and send forms.
+A Javascript class to fully validate and send forms.
 </br></br>
 
 ## Usage:
@@ -11,6 +11,41 @@ const myForm = new EgoForm({
     element: document.getElementById('myForm'),
     submitType: 'fetch',
     debug: true,
+    submitDataFormat: 'formData',
+    requestHeaders: {},
+    fieldGroups: {
+        phone_numbers: [
+            'phone',
+            'mobile'
+        ]
+    },
+    serializerIgnoreList: ['ignore'],
+    classes: {
+        requiredField: '--required',
+        requiredIfFilledField: '--required-if-filled',
+        fieldHasError: '--has-error',
+        controlHasError: 'is-danger',
+        hiddenErrorMessage: 'is-hidden',
+        formSubmittingState: '--submitting',
+        buttonSubmittingState: 'is-loading'
+    },
+    customValidations: {
+        test: [{
+            name: 'isValid',
+            condition: (value) => value === 'testing',
+            message: 'This field value should be "testing".'
+        }]
+    },
+    customValidationsMessages: {
+        "fieldName": {
+            "empty": "message",
+            "invalid": "message",
+        }
+    },
+    onStepChange: (previous, next) => console.log(current, next),
+    onValidationError: fields => console.log(fields),
+    onSubmitStart: () => console.log('Submit start'),
+    onSubmitEnd: () => console.log('Submit end'),
     onSuccess: resp => console.log('Success', resp),
     onError: err => console.log('Error', err)
 });
@@ -101,6 +136,7 @@ const myForm = new EgoForm({
 | *fieldGroups* | Group fields as nestes objects inside the body of the request. Should recieve an object containing key-value pairs, where the key is the name of the group and the value an array listing the field names. | Object or `null`.
 | *classes* | Customize some classes to match your own. Should recieve an object containig the replaced classnames. See [customizable classes] | Object or `null`.
 | *customValidations* | Define your own validations. Should recieve an object containig key-value pairs, where the key is the name of the custom `data-type`, and the value an array of validations defining a condition to be passed and a message in case it's not. | Object or `null`.
+| *customValidationMessages* | Lets you customize existing validation messages. It expects an object containing the name of the field and the custom messages inside. Refer to [Usage](#usage) to see an example. | Object or `null`.
 | *resetOnSuccess* | This option completely resets the form and its fields. | Boolean, default `true`.
 | *scrollOnError* | This option smoothly scrolls the page to show the first field with errors. Useful when building long forms to make sure the user sees the errors. | Boolean, default `true`.
 | *debug* | On debug mode, the form won't be submitted. Intead, every step will be logged into the dev console of the browser. | Boolean, default `false`.
@@ -109,6 +145,8 @@ const myForm = new EgoForm({
 ### Events
 | Name | Description | Accepted values |
 | --- | ----------- | ----------- |
+| *onStepChange* | Event triggered every time there's a step change. Only available for stepped forms. It returns the previous and the next steps. | An anonymous function or `null`.
+| *onValidationError* | Event triggered when there's any validation error. It returns an array containing the names of the invalid fields. | An anonymous function or `null`.
 | *onSubmitStart* | Event triggered when the submit starts. | An anonymous function or `null`.
 | *onSubmitEnd* | Event triggered when the submit ends, regardless of the outcome. | An anonymous function or `null`.
 | *onSuccess* | Event triggered when the request results successful. | An anonymous function or `null`.
@@ -117,11 +155,25 @@ const myForm = new EgoForm({
 
 ### Validation:
 In order to use validations, you must set the correct data type for each field. You can do so by adding a `type` data attribute to the field element, e.g; `<div class="form__field" data-type="text">`. This attribute will be used by the validator to run certain tests. Here's a list of the different available data types:
-| Name | Description | Extra attributes |
-| ---| --- | ----------- |
-| `text` | This can be considered as the default type. It's use for simple text input and it doesn't have any special validation appart from the required ones. |  |
-| `email` | Used for email inputs. It validates the value to comply the requirement for a well formed email address. |  |
-| `url` | Used for URL inputs. It validates the value to comply the requirement for a well formed URL. |  |
-| `cuit`/`cuil` | It validates the value to comply the requirement for a valid CUIT or CUIL number, applying the official formula. |  |
-| `money` | It validates the value to comply the requirement for a valid CUIT or CUIL number, applying the official formula. |  |
+| Name | Description |
+| ---| --- |
+| `text` | This can be considered as the default type. It's use for simple text input and it doesn't have any special validation appart from the required ones. |
+| `email` | Used for email inputs. It validates the value to comply the requirement for a well formed email address. |
+| `url` | Used for URL inputs. It validates the value to comply the requirement for a well formed URL. |
+| `cuit` / `cuil` | It validates the value to comply the requirement for a valid CUIT or CUIL number, applying the official formula. |
+| `password_repeat` | Use this type alogn with a password field whit an ID of `password`, to validate that both fields have the same value. Mostly intended for password reset forms. |
+| `single_checkbox` | This type validates that a specific checkbox is checked. Useful for cases like terms and conditions acceptance. |
 
+### Masks:
+Add this class names to the field element in oprder to apply some masks and filters to your inputs.
+
+| Class name | Description | Extra attributes |
+| ---| --- | ----------- |
+| `--number` | It converts the value to only numbers, with the option of being formated and support decimals. | `data-thousands-separator`: if declared it will be used to separate thousands.<br />`data-decimal-separator`: if declared it will be used to separate decimals.<br />`data-decimals`: the number of decimal places, defaults to 2. |
+| `--money-amount` | It converts the input into a valid currency expression. | `data-currency`: this attribute is use to mask the field value adding the currency at the begining. Defualts to '$'. |
+| `--phone` | It filters the value using a (opinionated) regular expression, which only allows numbers, plus symbols, hyphens, parentheses and white spaces. | |
+<br />
+
+## Extras
+### Toggle password visibility
+Add a button with the class name `form__toggle-password-visibility` inside the field element to toggle the control (input) type between `password` and `text`. Note: the control and the button must be siblings.
