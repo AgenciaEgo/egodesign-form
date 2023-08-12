@@ -293,7 +293,7 @@ export default class EgoForm {
     }
     
     filterPhoneNumber(value) {
-        let reg = /[a-zA-Z*'";:\\/?!@#$%^&=_`~]/g;
+        let reg = /[^\d+\-() ]*/g;
         return value.replace(reg, '');
     }
 
