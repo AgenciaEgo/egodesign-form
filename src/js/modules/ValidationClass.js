@@ -157,7 +157,7 @@ export default class EgoFormValidator {
             input.value = '';
             field.classList.remove('--has-file');
             input.setAttribute('aria-invalid', 'true');
-            field.classList.add('--has-error');
+            field.classList.add(this.classes.fieldHasError);
         }
         else if (fileName) {
             this.hasFile = true;
