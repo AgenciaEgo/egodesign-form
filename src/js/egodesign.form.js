@@ -88,7 +88,7 @@ export default class EgoForm {
             if (this.debug) this.showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
 
             if (this.scrollOnError) {
-                const firstInvalidField = this.form.querySelector('.form__field.--has-error');
+                const firstInvalidField = this.form.querySelector(`.form__field.${this.classes.fieldHasError}`);
                 if (!isInViewport(firstInvalidField)) firstInvalidField.scrollIntoView({behavior: 'smooth'});
             }
             if (this.debug) this.showLog(`there are invalid fields.`);
@@ -182,7 +182,7 @@ export default class EgoForm {
     reset() {
         this.form.reset();
         this.form.querySelectorAll('.form__field').forEach(field => 
-            field.classList.remove('--filled', '--has-error')
+            field.classList.remove('--filled', `${this.classes.fieldHasError}`)
         );
         this.form.querySelectorAll('.form__control').forEach(field => 
             field.setAttribute('aria-invalid', 'false')
@@ -209,10 +209,12 @@ export default class EgoForm {
                 this.isValid = true;
                 
                 setTimeout(() => {
+                    // Validate each required field
                     if (requiredFields && (step === 'next' || step === 'optional')) {
-                        requiredFields.forEach((field) => {
-                            if (this.isValid) this.isValid = this.validator.validateField(field);
-                        })
+                        requiredFields.forEach(field => {
+                            let fieldValid = this.validator.validateField(field);
+                            if (!fieldValid) this.isValid = false;
+                        });
                     }
         
                     if (currentElement && nextElement && this.isValid) {
