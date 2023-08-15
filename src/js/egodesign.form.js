@@ -209,10 +209,12 @@ export default class EgoForm {
                 this.isValid = true;
                 
                 setTimeout(() => {
+                    // Validate each required field
                     if (requiredFields && (step === 'next' || step === 'optional')) {
-                        requiredFields.forEach((field) => {
-                            if (this.isValid) this.isValid = this.validator.validateField(field);
-                        })
+                        requiredFields.forEach(field => {
+                            let fieldValid = this.validator.validateField(field);
+                            if (!fieldValid) this.isValid = false;
+                        });
                     }
         
                     if (currentElement && nextElement && this.isValid) {
