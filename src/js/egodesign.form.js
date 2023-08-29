@@ -24,7 +24,7 @@ export default class EgoForm {
     }) {
         this.form = element;
         this.submitType = submitType || 'fetch';
-        this.submitDataFormat = submitDataFormat || 'fromData' // formData - json
+        this.submitDataFormat = submitDataFormat || 'formData' // formData - json
         this.requestHeaders = requestHeaders || {};
         this.actionUrl = this.form.getAttribute('action');
         this.submitMethod = this.form.getAttribute('method') || 'POST';
@@ -109,7 +109,7 @@ export default class EgoForm {
                             'Content-Type': this.submitDataFormat === 'json' ? 'application/json' : 'multipart/form-data',
                             ...this.requestHeaders
                         },
-                        body: this.submitDataFormat === 'json' ? JSON.stringify(this.serializeData()) : this.serializeData(),
+                        body: this.submitDataFormat === 'json' ? JSON.stringify(this.serializeData()) : this.serializeData(true),
                     })
                     .then((resp) => {
                         if (resp.status === 200 || resp.status === 201) {
