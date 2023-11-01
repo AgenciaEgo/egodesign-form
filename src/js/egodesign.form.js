@@ -105,10 +105,7 @@ export default class EgoForm {
                 if (this.submitType == 'fetch') {
                     fetch(this.actionUrl, {
                         method: this.submitMethod,
-                        headers: {
-                            'Content-Type': this.submitDataFormat === 'json' ? 'application/json' : 'multipart/form-data',
-                            ...this.requestHeaders
-                        },
+                        headers: this.submitDataFormat === 'json' ? {'Content-Type': 'application/json', ...this.requestHeaders} : {...this.requestHeaders},
                         body: this.submitDataFormat === 'json' ? JSON.stringify(this.serializeData()) : this.serializeData(true),
                     })
                     .then((resp) => {
