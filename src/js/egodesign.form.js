@@ -297,6 +297,7 @@ export default class EgoForm {
     }
 
     togglePasswordVisibility(btn) {
+        if (this.debug) this.showLog('Password visibility toggled!');
         const input = btn.parentElement.querySelector('.form__control');
         if (input) {
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
