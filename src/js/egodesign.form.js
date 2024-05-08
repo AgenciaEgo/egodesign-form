@@ -20,6 +20,7 @@ export default class EgoForm {
         onError,
         resetOnSuccess,
         scrollOnError,
+        preventSubmit,
         debug
     }) {
         this.form = element;
@@ -59,6 +60,7 @@ export default class EgoForm {
         this.currentStep = this.form.querySelector('.form__step') ? parseInt(this.form.querySelector('.form__step.--active').dataset.step) : 0;
         this.currentStepOptional = false;
         this.stepChanging = false;
+        this.preventSubmit = preventSubmit || false;
         this.debug = debug || false;
 
 
@@ -66,7 +68,12 @@ export default class EgoForm {
         if (this.debug) this.showLog('initialized!');
     }
 
+
     submit() {
+        if (!this.preventSubmit) this.resumeSubmit();
+    }
+
+    resumeSubmit() {
         if (this.debug) this.showLog(`submitting using ${this.submitType}!`);
 
         this.submittingForm(true);
