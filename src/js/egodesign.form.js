@@ -18,6 +18,7 @@ export default class EgoForm {
         onSubmitEnd, 
         onSuccess, 
         onError,
+        onBeforeSubmit,
         resetOnSuccess,
         scrollOnError,
         preventSubmit,
@@ -52,6 +53,7 @@ export default class EgoForm {
         this.onSubmitEnd = onSubmitEnd || false;
         this.onSuccess = onSuccess || false;
         this.onError = onError || false;
+        this.onBeforeSubmit = onBeforeSubmit || false;
         this.fieldGroups = fieldGroups || false;
         this.hasFile = false;
         this.serializerIgnoreList = serializerIgnoreList || [];
@@ -318,6 +320,7 @@ export default class EgoForm {
         if (this.submitBtn) {
             this.submitBtn.addEventListener('click', function(e) { 
                 e.preventDefault();
+                if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit();
                 self.submit();
             });
         }

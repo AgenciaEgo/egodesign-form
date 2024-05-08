@@ -43,6 +43,7 @@ const myForm = new EgoForm({
         }
     },
     onStepChange: (previous, next) => console.log(current, next),
+    onBeforeSubmit: () => console.log('Before submit'),
     onValidationError: fields => console.log(fields),
     onSubmitStart: () => console.log('Submit start'),
     onSubmitEnd: () => console.log('Submit end'),
