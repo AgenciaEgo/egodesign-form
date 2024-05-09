@@ -148,6 +148,7 @@ const myForm = new EgoForm({
 | --- | ----------- | ----------- |
 | *onStepChange* | Event triggered every time there's a step change. Only available for stepped forms. It returns the previous and the next steps. | An anonymous function or `null`.
 | *onValidationError* | Event triggered when there's any validation error. It returns an array containing the names of the invalid fields. | An anonymous function or `null`.
+| *onBeforeSubmit* | Event triggered before the submit starts. | An anonymous function or `null`.
 | *onSubmitStart* | Event triggered when the submit starts. | An anonymous function or `null`.
 | *onSubmitEnd* | Event triggered when the submit ends, regardless of the outcome. | An anonymous function or `null`.
 | *onSuccess* | Event triggered when the request results successful. | An anonymous function or `null`.
