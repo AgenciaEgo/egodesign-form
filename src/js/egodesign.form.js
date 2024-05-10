@@ -18,8 +18,10 @@ export default class EgoForm {
         onSubmitEnd, 
         onSuccess, 
         onError,
+        onBeforeSubmit,
         resetOnSuccess,
         scrollOnError,
+        preventSubmit,
         debug
     }) {
         this.form = element;
@@ -51,6 +53,7 @@ export default class EgoForm {
         this.onSubmitEnd = onSubmitEnd || false;
         this.onSuccess = onSuccess || false;
         this.onError = onError || false;
+        this.onBeforeSubmit = onBeforeSubmit || false;
         this.fieldGroups = fieldGroups || false;
         this.hasFile = false;
         this.serializerIgnoreList = serializerIgnoreList || [];
@@ -59,6 +62,7 @@ export default class EgoForm {
         this.currentStep = this.form.querySelector('.form__step') ? parseInt(this.form.querySelector('.form__step.--active').dataset.step) : 0;
         this.currentStepOptional = false;
         this.stepChanging = false;
+        this.preventSubmit = preventSubmit || false;
         this.debug = debug || false;
 
 
@@ -66,7 +70,12 @@ export default class EgoForm {
         if (this.debug) this.showLog('initialized!');
     }
 
+
     submit() {
+        if (!this.preventSubmit) this.resumeSubmit();
+    }
+
+    resumeSubmit() {
         if (this.debug) this.showLog(`submitting using ${this.submitType}!`);
 
         this.submittingForm(true);
@@ -311,6 +320,7 @@ export default class EgoForm {
         if (this.submitBtn) {
             this.submitBtn.addEventListener('click', function(e) { 
                 e.preventDefault();
+                if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit();
                 self.submit();
             });
         }
