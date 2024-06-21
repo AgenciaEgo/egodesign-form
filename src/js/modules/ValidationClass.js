@@ -15,6 +15,7 @@ export default class EgoFormValidator {
     validateField(field) {
         const type = field.dataset.type,
             isMultipleChoice = ['radio', 'checkbox'].includes(type),
+            isRequired = field.classList.contains(this.classes.requiredField),
             isRequiredIfFilled = field.classList.contains(this.classes.requiredIfFilledField),
             errorElement = field.querySelector('.form__error'),
             control = field.querySelector('.form__control'),
@@ -25,18 +26,24 @@ export default class EgoFormValidator {
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
         
-        if ((isMultipleChoice && !controlCheked) || !control.value) {
+        if(isRequired && !control.value) {
+            if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
+            this.displayFieldError(control, field, errorElement);
+            return false;
+        }
+
+        if ((isMultipleChoice && !controlCheked)) {
             if (!isRequiredIfFilled) {
                 this.displayFieldError(control, field, errorElement);
                 if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
                 return false;
             }
         }
-        else if (control.value) {
+        else {
             // Content & Format validation
             switch (type) {
                 case 'email':
-                    if (!this.isValidEmail(control.value)) {
+                    if (control.value && !this.isValidEmail(control.value)) {
                         if (errorElement) errorElement.innerText = this.validationMessages.email.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;
@@ -55,7 +62,7 @@ export default class EgoFormValidator {
 
                 case 'cuil':
                 case 'cuit':
-                    if (!this.isValidCuitCuil(control.value)) {
+                    if (control.value && !this.isValidCuitCuil(control.value)) {
                         if (errorElement) errorElement.innerText = this.validationMessages.cuil.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;
@@ -63,7 +70,7 @@ export default class EgoFormValidator {
                     break;
 
                 case 'url':
-                    if (!this.isValidUrl(control.value)) {
+                    if (control.value && !this.isValidUrl(control.value)) {
                         if (errorElement) errorElement.innerText = this.validationMessages.url.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;

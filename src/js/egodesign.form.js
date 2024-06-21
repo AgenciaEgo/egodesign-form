@@ -83,7 +83,7 @@ export default class EgoForm {
         // Validate each required field
         this.isValid = true;
         const invalidFields = [];
-        this.form.querySelectorAll(`.${this.classes.requiredField}, .${this.classes.requiredIfFilledField}`).forEach(field => {
+        this.form.querySelectorAll(`.form__field`).forEach(field => {
             const fieldValid = this.validator.validateField(field);
             if (!fieldValid) {
                 invalidFields.push(field.querySelector('.form__control')?.name);
