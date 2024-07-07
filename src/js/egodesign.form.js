@@ -47,23 +47,23 @@ export default class EgoForm {
             classes: this.classes,
             customValidationMessages: customValidationMessages || null,
         });
-        this.onValidationError = onValidationError || false;
-        this.onStepChange = onStepChange || false;
-        this.onSubmitStart = onSubmitStart || false;
-        this.onSubmitEnd = onSubmitEnd || false;
-        this.onSuccess = onSuccess || false;
-        this.onError = onError || false;
-        this.onBeforeSubmit = onBeforeSubmit || false;
-        this.fieldGroups = fieldGroups || false;
+        this.onValidationError = onValidationError ?? false;
+        this.onStepChange = onStepChange ?? false;
+        this.onSubmitStart = onSubmitStart ?? false;
+        this.onSubmitEnd = onSubmitEnd ?? false;
+        this.onSuccess = onSuccess ?? false;
+        this.onError = onError ?? false;
+        this.onBeforeSubmit = onBeforeSubmit ?? false;
+        this.fieldGroups = fieldGroups ?? false;
         this.hasFile = false;
         this.serializerIgnoreList = serializerIgnoreList || [];
-        this.resetOnSuccess = resetOnSuccess || true;
-        this.scrollOnError = scrollOnError || true;
+        this.resetOnSuccess = resetOnSuccess ?? true;
+        this.scrollOnError = scrollOnError ?? true;
         this.currentStep = this.form.querySelector('.form__step') ? parseInt(this.form.querySelector('.form__step.--active').dataset.step) : 0;
         this.currentStepOptional = false;
         this.stepChanging = false;
-        this.preventSubmit = preventSubmit || false;
-        this.debug = debug || false;
+        this.preventSubmit = preventSubmit ?? false;
+        this.debug = debug ?? false;
 
 
         this.declareHandlers();
@@ -90,7 +90,6 @@ export default class EgoForm {
                 this.isValid = false;
             }
         });
-
         if (!this.isValid) {
             this.submittingForm(false);
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields);
@@ -111,6 +110,7 @@ export default class EgoForm {
                 }, 1000);
             }
             else {
+                
                 if (this.submitType == 'fetch') {
                     fetch(this.actionUrl, {
                         method: this.submitMethod,
@@ -316,6 +316,8 @@ export default class EgoForm {
     }
 
     declareHandlers() {
+        console.log('Instance', this);
+
         const self = this;
         if (this.submitBtn) {
             this.submitBtn.addEventListener('click', function(e) { 
