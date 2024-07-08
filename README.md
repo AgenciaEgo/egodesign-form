@@ -1,4 +1,4 @@
-# Egoform
+# EgoForm
 A Javascript class to fully validate and send forms.
 </br></br>
 
