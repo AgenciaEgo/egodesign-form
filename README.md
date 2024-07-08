@@ -1,6 +1,12 @@
-# @egodesign/form
+# Egoform
 A Javascript class to fully validate and send forms.
 </br></br>
+
+![NPM Version](https://img.shields.io/npm/v/@egodesign/form)
+![NPM Downloads](https://img.shields.io/npm/dm/@egodesign/form)
+
+
+
 
 ## Usage:
 Import the **`EgoForm`** class into your file and then create as many instances as needed.
