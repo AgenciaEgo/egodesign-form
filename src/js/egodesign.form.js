@@ -39,6 +39,7 @@ export default class EgoForm {
             hiddenErrorMessage: '--hidden',
             formSubmittingState: '--submitting',
             buttonSubmittingState: '--loading',
+            clearFieldError: '--clear-error',
             ...classes
         }
         this.isValid = true;
@@ -360,6 +361,14 @@ export default class EgoForm {
             .forEach(element => {
                 element.addEventListener('focus', () => {
                     this.validator.clearControlError(element);
+                });
+            });
+
+        this.form.querySelectorAll('.'+this.classes.clearFieldError)
+            .forEach(element => {
+                element.addEventListener('click', () => {
+                    const field = getParentByClassName({element: element, className: 'form__field'});
+                    self.validator.clearControlError(field.querySelector('.form__control'));
                 });
             });
         
