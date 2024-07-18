@@ -317,8 +317,6 @@ export default class EgoForm {
     }
 
     declareHandlers() {
-        console.log('Instance', this);
-
         const self = this;
         if (this.submitBtn) {
             this.submitBtn.addEventListener('click', function(e) { 
