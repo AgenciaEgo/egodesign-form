@@ -40,6 +40,7 @@ export default class EgoForm {
             formSubmittingState: '--submitting',
             buttonSubmittingState: '--loading',
             clearFieldError: '--clear-error',
+            validateOnBlur: '--validate-onblur',
             ...classes
         }
         this.isValid = true;
@@ -331,7 +332,7 @@ export default class EgoForm {
         this.validator.realTimeValidations(this.form);
 
         // OnBlur validation
-        self.form.querySelectorAll('.form__field.--validate-onblur')
+        self.form.querySelectorAll(`.form__field.${self.classes.validateOnBlur}`)
             .forEach(field => {
                 console.log('ONBLUR', field);
                 field.querySelector('.form__control').addEventListener('blur', () => {
