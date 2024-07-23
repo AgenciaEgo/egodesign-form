@@ -66,7 +66,6 @@ export default class EgoForm {
         this.preventSubmit = preventSubmit ?? false;
         this.debug = debug ?? false;
 
-
         this.declareHandlers();
         if (this.debug) this.showLog('initialized!');
     }
@@ -330,6 +329,16 @@ export default class EgoForm {
         }
 
         this.validator.realTimeValidations(this.form);
+
+        // OnBlur validation
+        self.form.querySelectorAll('.form__field.--validate-onblur')
+            .forEach(field => {
+                console.log('ONBLUR', field);
+                field.querySelector('.form__control').addEventListener('blur', () => {
+                    const fieldValid = this.validator.validateField(field);
+                    if (!fieldValid) this.isValid = false;
+                });
+            });
 
         this.form.querySelectorAll('.form__next-step').forEach(element => {
             element.addEventListener('click', self.nextStep.bind(self));
