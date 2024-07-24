@@ -173,6 +173,12 @@ In order to use validations, you must set the correct data type for each field. 
 | `password_repeat` | Use this type alogn with a password field whit an ID of `password`, to validate that both fields have the same value. Mostly intended for password reset forms. |
 | `single_checkbox` | This type validates that a specific checkbox is checked. Useful for cases like terms and conditions acceptance. |
 
+In addition you can validate the minimum and maximum length of a field. You can do so by adding the `data-min-length` and `data-max-length` attributes to the field element.
+| Attribute | Description |
+| ---| --- |
+| `data-min-length` | The minimum length of the field. |
+| `data-max-length` | The maximum length of the field. |
+
 ### Masks:
 Add this class names to the field element in order to apply some masks and filters to your inputs.
 
