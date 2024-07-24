@@ -21,7 +21,9 @@ export default class EgoFormValidator {
             control = field.querySelector('.form__control'),
             controlCheked = isMultipleChoice ? field.querySelector('.form__control:checked') : null,
             controlName = control ? control.getAttribute('name') : '',
-            customTypes = Object.keys(this.customValidations);
+            customTypes = Object.keys(this.customValidations),
+            minLength = field.dataset.minLength ? parseInt(field.dataset.minLength) : null,
+            maxLength = field.dataset.maxLength ? parseInt(field.dataset.maxLength) : null;
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
@@ -30,6 +32,23 @@ export default class EgoFormValidator {
             if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
             this.displayFieldError(control, field, errorElement);
             return false;
+        }
+
+        if(control.value) {
+            if (minLength) {
+                if (control.value.length < minLength) {
+                    if (errorElement) errorElement.innerText = this.validationMessages.default.minLength.replace('[[var]]', minLength);
+                    this.displayFieldError(control, field, errorElement);
+                    return false;
+                }
+            }
+            if (maxLength) {
+                if (control.value.length > maxLength) {
+                    if (errorElement) errorElement.innerText = this.validationMessages.default.maxLength.replace('[[var]]', maxLength);
+                    this.displayFieldError(control, field, errorElement);
+                    return false;
+                }
+            }
         }
 
         if ((isMultipleChoice && !controlCheked)) {

@@ -1,7 +1,9 @@
 const validationMessages = {
     "default": {
         "empty": "Campo requerido.",
-        "invalid": "Campo nó válido."
+        "invalid": "Campo nó válido.",
+        "minLength": "Debe tener al menos [[var]] caracteres.",
+        "maxLength": "Debe tener como máximo [[var]] caracteres.",
     },
     "email": {
         "empty": "El email es requerido.",

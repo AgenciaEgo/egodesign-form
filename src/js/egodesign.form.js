@@ -183,6 +183,9 @@ export default class EgoForm {
                 }
             }
         }
+
+        
+
         return returnFormData ? formData : jsonData;
     }
 
