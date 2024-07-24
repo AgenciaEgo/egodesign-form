@@ -140,7 +140,8 @@ export default class EgoFormValidator {
 
     isValidCuitCuil(num) {
         const multipliers = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
-        let digits = num.toString().split('');
+
+        let digits = num.toString().replace(/[^0-9]/g, '').split('');
 
         if (digits.length != 11) return false;
 
