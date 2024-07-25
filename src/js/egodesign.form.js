@@ -337,7 +337,6 @@ export default class EgoForm {
         // OnBlur validation
         self.form.querySelectorAll(`.form__field.${self.classes.validateOnBlur}`)
             .forEach(field => {
-                console.log('ONBLUR', field);
                 field.querySelector('.form__control').addEventListener('blur', () => {
                     const fieldValid = this.validator.validateField(field);
                     if (!fieldValid) this.isValid = false;
