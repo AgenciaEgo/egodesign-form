@@ -102,3 +102,13 @@ export const isInViewport = (element) => {
         rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
 }
+
+export function showLog(msg, type = 'log') {
+    if (type == 'log') {
+        console.log('::EgoForm:: ' + msg);
+    }
+    else if (type == 'data') {
+        console.log('::EgoForm:: DATA');
+        console.table(msg);
+    }
+}

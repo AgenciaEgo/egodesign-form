@@ -1,15 +1,17 @@
 import validationMessages from './validationMessages';
-import { getParentByClassName } from './tools';
+import { getParentByClassName, showLog } from './tools';
 
 export default class EgoFormValidator {
     constructor({
         customValidations,
         classes,
-        customValidationMessages
+        customValidationMessages,
+        debug
     }) {
         this.customValidations = customValidations;
         this.validationMessages = {...validationMessages, ...customValidationMessages} || validationMessages;
         this.classes = classes;
+        this.debug = debug;
     }
 
     validateField(field) {
@@ -27,9 +29,11 @@ export default class EgoFormValidator {
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
+
+        if (this.debug) showLog(`validating field "${controlName}"`);
         
         if(isRequired && !control.value) {
-            if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
+            if (errorElement) errorElement.textContent = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
             this.displayFieldError(control, field, errorElement);
             return false;
         }
@@ -37,14 +41,14 @@ export default class EgoFormValidator {
         if(control.value) {
             if (minLength) {
                 if (control.value.length < minLength) {
-                    if (errorElement) errorElement.innerText = this.validationMessages.default.minLength.replace('[[var]]', minLength);
+                    if (errorElement) errorElement.textContent = this.validationMessages.default.minLength.replace('[[var]]', minLength);
                     this.displayFieldError(control, field, errorElement);
                     return false;
                 }
             }
             if (maxLength) {
                 if (control.value.length > maxLength) {
-                    if (errorElement) errorElement.innerText = this.validationMessages.default.maxLength.replace('[[var]]', maxLength);
+                    if (errorElement) errorElement.textContent = this.validationMessages.default.maxLength.replace('[[var]]', maxLength);
                     this.displayFieldError(control, field, errorElement);
                     return false;
                 }
@@ -54,7 +58,7 @@ export default class EgoFormValidator {
         if ((isMultipleChoice && !controlCheked)) {
             if (!isRequiredIfFilled) {
                 this.displayFieldError(control, field, errorElement);
-                if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
+                if (errorElement) errorElement.textContent = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
                 return false;
             }
         }
@@ -63,7 +67,7 @@ export default class EgoFormValidator {
             switch (type) {
                 case 'email':
                     if (control.value && !this.isValidEmail(control.value)) {
-                        if (errorElement) errorElement.innerText = this.validationMessages.email.invalid;
+                        if (errorElement) errorElement.textContent = this.validationMessages.email.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;
                     }
@@ -72,7 +76,7 @@ export default class EgoFormValidator {
                 case 'password_repeat': {
                     const comparedTo = document.getElementById('password');
                     if (comparedTo && (control.value != comparedTo.value)) {
-                        if (errorElement) errorElement.innerText = this.validationMessages.password_repeat.unequal;
+                        if (errorElement) errorElement.textContent = this.validationMessages.password_repeat.unequal;
                         this.displayFieldError(control, field, errorElement);
                         return false;
                     }
@@ -82,7 +86,7 @@ export default class EgoFormValidator {
                 case 'cuil':
                 case 'cuit':
                     if (control.value && !this.isValidCuitCuil(control.value)) {
-                        if (errorElement) errorElement.innerText = this.validationMessages.cuil.invalid;
+                        if (errorElement) errorElement.textContent = this.validationMessages.cuil.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;
                     }
@@ -90,7 +94,7 @@ export default class EgoFormValidator {
 
                 case 'url':
                     if (control.value && !this.isValidUrl(control.value)) {
-                        if (errorElement) errorElement.innerText = this.validationMessages.url.invalid;
+                        if (errorElement) errorElement.textContent = this.validationMessages.url.invalid;
                         this.displayFieldError(control, field, errorElement);
                         return false;
                     }
@@ -99,7 +103,7 @@ export default class EgoFormValidator {
                 case 'money':
                     const currency = control.dataset.currency ? control.dataset.currency : '$';
                     if (control.value == '' || control.value == currency) {
-                        if (errorElement) errorElement.innerText = this.validationMessages.default.empty;
+                        if (errorElement) errorElement.textContent = this.validationMessages.default.empty;
                         this.displayFieldError(control, field, errorElement);
                         return false;
                     }
@@ -108,7 +112,7 @@ export default class EgoFormValidator {
                 case 'single-checkbox':
                     if (!control.checked) {
                         this.displayFieldError(control, field, errorElement);
-                        if (errorElement) errorElement.innerText = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
+                        if (errorElement) errorElement.textContent = this.validationMessages[ controlName ] ? this.validationMessages[ controlName ].empty : this.validationMessages.default.empty;
                         return false;
                     }
                     break;
@@ -121,7 +125,7 @@ export default class EgoFormValidator {
                 if (type === customType) {
                     for (const validation of this.customValidations[type]) {
                         if (!validation.condition(control.value)) {
-                            if (errorElement) errorElement.innerText = validation.message || '';
+                            if (errorElement) errorElement.textContent = validation.message || '';
                             this.displayFieldError(control, field, errorElement);
                             return false;
                         }
@@ -208,7 +212,7 @@ export default class EgoFormValidator {
 
 
         if (errorMessage) {
-            errorElement.innerText = errorMessage;
+            errorElement.textContent = errorMessage;
             this.displayFieldError(input, field, errorElement);
         }
     }
@@ -229,7 +233,7 @@ export default class EgoFormValidator {
         field.classList.remove(this.classes.fieldHasError);
 
         if (errorElement) {
-            errorElement.innerText = '';
+            errorElement.textContent = '';
             errorElement.classList.add(this.classes.hiddenErrorMessage);
         }
     }

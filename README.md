@@ -127,6 +127,7 @@ const myForm = new EgoForm({
 | *requiredField* | `--required` | Use this class to mark required fields. |
 | *requiredIfFilledField* | `--required-if-filled` | Use this class to mark those fields that should be validated only when filled. For example, an email field that is not required but should be a valid email if filled. |
 | *validateOnBlur* | `--validate-onblur` | Use this class to mark those fields that should be validated when the control is blurred. |
+| *validateOnInput* | `--validate-oninput` | Use this class to mark those fields that should be validated in real time as the control gets new input. |
 | *fieldHasError* | `--has-error` | This class is added to the fields that has errors after validation and removed when the field is focused. |
 | *controlHasError* | - | You can set this class to be added to the controls that has errors. Works similar to *fieldHasError*. |
 | *hiddenErrorMessage* | `--hidden` | This class is removed from the error messages when it's parent field has errors and added back when the field is focused. |

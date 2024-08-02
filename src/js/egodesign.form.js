@@ -1,4 +1,4 @@
-import { vanillaFade, isInViewport, getParentByClassName } from './modules/tools';
+import { vanillaFade, isInViewport, getParentByClassName, showLog } from './modules/tools';
 import EgoFormValidator from './modules/ValidationClass';
 
 export default class EgoForm {
@@ -41,6 +41,7 @@ export default class EgoForm {
             buttonSubmittingState: '--loading',
             clearFieldError: '--clear-error',
             validateOnBlur: '--validate-onblur',
+            validateOnInput: '--validate-oninput',
             ...classes
         }
         this.isValid = true;
@@ -48,6 +49,7 @@ export default class EgoForm {
             customValidations: customValidations || {},
             classes: this.classes,
             customValidationMessages: customValidationMessages || null,
+            debug: debug
         });
         this.onValidationError = onValidationError ?? false;
         this.onStepChange = onStepChange ?? false;
@@ -68,7 +70,7 @@ export default class EgoForm {
         this.debug = debug ?? false;
 
         this.declareHandlers();
-        if (this.debug) this.showLog('initialized!');
+        if (this.debug) showLog('initialized!');
     }
 
 
@@ -77,7 +79,7 @@ export default class EgoForm {
     }
 
     resumeSubmit() {
-        if (this.debug) this.showLog(`submitting using ${this.submitType}!`);
+        if (this.debug) showLog(`submitting using ${this.submitType}!`);
 
         this.submittingForm(true);
 
@@ -94,18 +96,17 @@ export default class EgoForm {
         if (!this.isValid) {
             this.submittingForm(false);
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields);
-            if (this.debug) this.showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
+            if (this.debug) showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
 
             if (this.scrollOnError) {
                 const firstInvalidField = this.form.querySelector(`.form__field.${this.classes.fieldHasError}`);
                 if (!isInViewport(firstInvalidField)) firstInvalidField.scrollIntoView({behavior: 'smooth'});
             }
-            if (this.debug) this.showLog(`there are invalid fields.`);
         }
         else {
             if (this.debug) {
-                this.showLog(`the form was submitted!`);
-                this.showLog(this.serializeData(), 'data');
+                showLog(`the form was submitted!`);
+                showLog(this.serializeData(), 'data');
                 setTimeout(() => {
                     this.submittingForm(false);
                 }, 1000);
@@ -310,7 +311,7 @@ export default class EgoForm {
     }
 
     togglePasswordVisibility(btn) {
-        if (this.debug) this.showLog('Password visibility toggled!');
+        if (this.debug) showLog('Password visibility toggled!');
         const input = btn.parentElement.querySelector('.form__control');
         if (input) {
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -335,12 +336,23 @@ export default class EgoForm {
         this.validator.realTimeValidations(this.form);
 
         // OnBlur validation
-        self.form.querySelectorAll(`.form__field.${self.classes.validateOnBlur}`)
+        this.form.querySelectorAll(`.form__field.${this.classes.validateOnBlur}`)
             .forEach(field => {
                 field.querySelector('.form__control').addEventListener('blur', () => {
                     const fieldValid = this.validator.validateField(field);
                     if (!fieldValid) this.isValid = false;
                 });
+            });
+
+        // OnInput validation
+        this.form.querySelectorAll(`.form__field.${this.classes.validateOnInput}`)
+            .forEach(field => {
+                const control = field.querySelector('.form__control');
+                const eventFunction = () => {
+                    const fieldValid = this.validator.validateField(field);
+                    if (fieldValid) this.validator.clearControlError(control);
+                }
+                control.addEventListener('input', eventFunction);
             });
 
         this.form.querySelectorAll('.form__next-step').forEach(element => {
@@ -442,15 +454,5 @@ export default class EgoForm {
         this.form.querySelectorAll('.form__toggle-password-visibility').forEach(element => {
             element.addEventListener('click', this.togglePasswordVisibility(element));
         });
-    }
-
-    showLog(msg, type = 'log') {
-        if (type == 'log') {
-            console.log('::EgoForm:: ' + msg);
-        }
-        else if (type == 'data') {
-            console.log('::EgoForm:: DATA');
-            console.table(msg);
-        }
     }
 }
