@@ -1,15 +1,32 @@
 # EgoForm
-A Javascript class to fully validate and send forms.
+Lightweight, dependency-free JavaScript library for comprehensive form validation and submission. Customize validation rules with ease and seamlessly integrate into any vanilla project.
 </br></br>
 
 ![NPM Version](https://img.shields.io/npm/v/@egodesign/form)
 ![NPM Downloads](https://img.shields.io/npm/dm/@egodesign/form)
 
+### Main features:
 
+- Comprehensive Validation: Supports various data types, custom validations, and minimum/maximum length checks.
+- Customization: Control class names and error messages to match your design.
+- Flexible Submission: Choose between fetch, get, or post methods for form submission.
+- Event Handling: Respond to validation errors, form submission events, and successful/failed responses.
 
 
 ## Usage:
-Import the **`EgoForm`** class into your file and then create as many instances as needed.
+
+1. Download or install it using the most popular PMs:
+
+```
+npm install @egodesign/form
+````
+or
+```
+yarn add @egodesign/form
+```
+<br>
+
+2. Import the **`EgoForm`** class into your file and create as many instances as needed.
 ```js
 import EgoForm from '@egodesign/form';
 
