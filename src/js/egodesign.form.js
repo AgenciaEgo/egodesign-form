@@ -12,14 +12,15 @@ export default class EgoForm {
         serializerIgnoreList,
         customValidations,
         customValidationMessages,
-        onStepChange, 
-        onValidationError, 
-        onSubmitStart, 
-        onSubmitEnd, 
-        onSuccess, 
+        onStepChange,
+        onValidationError,
+        onSubmitStart,
+        onSubmitEnd,
+        onSuccess,
         onError,
         onBeforeSubmit,
         resetOnSuccess,
+        resetLoaderOnSuccess,
         scrollOnError,
         preventSubmit,
         debug
@@ -45,7 +46,7 @@ export default class EgoForm {
             ...classes
         }
         this.isValid = true;
-        this.validator = new EgoFormValidator({ 
+        this.validator = new EgoFormValidator({
             customValidations: customValidations || {},
             classes: this.classes,
             customValidationMessages: customValidationMessages || null,
@@ -62,6 +63,7 @@ export default class EgoForm {
         this.hasFile = false;
         this.serializerIgnoreList = serializerIgnoreList || [];
         this.resetOnSuccess = resetOnSuccess ?? true;
+        this.resetLoaderOnSuccess = resetLoaderOnSuccess ?? true;
         this.scrollOnError = scrollOnError ?? true;
         this.currentStep = this.form.querySelector('.form__step') ? parseInt(this.form.querySelector('.form__step.--active').dataset.step) : 0;
         this.currentStepOptional = false;
@@ -100,7 +102,7 @@ export default class EgoForm {
 
             if (this.scrollOnError) {
                 const firstInvalidField = this.form.querySelector(`.form__field.${this.classes.fieldHasError}`);
-                if (!isInViewport(firstInvalidField)) firstInvalidField.scrollIntoView({behavior: 'smooth'});
+                if (!isInViewport(firstInvalidField)) firstInvalidField.scrollIntoView({ behavior: 'smooth' });
             }
         }
         else {
@@ -112,28 +114,28 @@ export default class EgoForm {
                 }, 1000);
             }
             else {
-                
+
                 if (this.submitType == 'fetch') {
                     fetch(this.actionUrl, {
                         method: this.submitMethod,
-                        headers: this.submitDataFormat === 'json' ? {'Content-Type': 'application/json', ...this.requestHeaders} : {...this.requestHeaders},
+                        headers: this.submitDataFormat === 'json' ? { 'Content-Type': 'application/json', ...this.requestHeaders } : { ...this.requestHeaders },
                         body: this.submitDataFormat === 'json' ? JSON.stringify(this.serializeData()) : this.serializeData(true),
                     })
-                    .then((resp) => {
-                        if (resp.status === 200 || resp.status === 201) {
-                            if (this.resetOnSuccess) this.reset();
-                            if (typeof this.onSuccess == 'function') this.onSuccess(resp);
-                        }
-                        else {
-                            if (typeof this.onError == 'function') this.onError(resp);
-                        }
-                    })
-                    .catch((err) => {
-                        if (typeof this.onError == 'function') this.onError(err);
-                    })
-                    .finally(() => {
-                        this.submittingForm(false);
-                    });
+                        .then((resp) => {
+                            if (resp.status === 200 || resp.status === 201) {
+                                if (this.resetOnSuccess) this.reset();
+                                if (typeof this.onSuccess == 'function') this.onSuccess(resp);
+                            }
+                            else {
+                                if (typeof this.onError == 'function') this.onError(resp);
+                            }
+                        })
+                        .catch((err) => {
+                            if (typeof this.onError == 'function') this.onError(err);
+                        })
+                        .finally(() => {
+                            this.submittingForm(false);
+                        });
                 }
                 else {
                     this.form.submit();
@@ -151,9 +153,11 @@ export default class EgoForm {
             if (typeof this.onSubmitStart == 'function') this.onSubmitStart();
         }
         else {
-            this.form.classList.remove(this.classes.formSubmittingState);
-            this.submitBtn.classList.remove(this.classes.buttonSubmittingState);
-            body.classList.remove('--block');
+            if (this.resetLoaderOnSuccess) {
+                this.form.classList.remove(this.classes.formSubmittingState);
+                this.submitBtn.classList.remove(this.classes.buttonSubmittingState);
+                body.classList.remove('--block');
+            }
             if (typeof this.onSubmitEnd == 'function') this.onSubmitEnd();
         }
     }
@@ -176,26 +180,26 @@ export default class EgoForm {
             for (const groupName in this.fieldGroups) {
                 if (Object.hasOwnProperty.call(this.fieldGroups, groupName)) {
                     let group = [{}];
-                    for (const field of this.fieldGroups[ groupName ]) {
-                        group[ 0 ][ field ] = formData.get(field);
-                        delete jsonData[ field ];
+                    for (const field of this.fieldGroups[groupName]) {
+                        group[0][field] = formData.get(field);
+                        delete jsonData[field];
                     }
-                    jsonData[ groupName ] = group;
+                    jsonData[groupName] = group;
                 }
             }
         }
 
-        
+
 
         return returnFormData ? formData : jsonData;
     }
 
     reset() {
         this.form.reset();
-        this.form.querySelectorAll('.form__field').forEach(field => 
+        this.form.querySelectorAll('.form__field').forEach(field =>
             field.classList.remove('--filled', `${this.classes.fieldHasError}`)
         );
-        this.form.querySelectorAll('.form__control').forEach(field => 
+        this.form.querySelectorAll('.form__control').forEach(field =>
             field.setAttribute('aria-invalid', 'false')
         );
         if (this.currentStep) this.changeStep(1);
@@ -204,21 +208,21 @@ export default class EgoForm {
     changeStep(step) {
         if (!this.stepChanging) {
             const current = this.currentStepOptional ? this.currentStep + 'b' : this.currentStep,
-                currentElement = this.form.querySelector('[data-step="'+ current +'"]'),
+                currentElement = this.form.querySelector('[data-step="' + current + '"]'),
                 requiredFields = currentElement.querySelectorAll(`.${this.classes.requiredField}`),
-                nextStepNumber = step === 'next' ? 
-                        this.currentStep + 1 
-                    : step === 'prev' && !this.currentStepOptional ? 
+                nextStepNumber = step === 'next' ?
+                    this.currentStep + 1
+                    : step === 'prev' && !this.currentStepOptional ?
                         this.currentStep - 1
-                    : step === 'optional' ?
-                        this.currentStep + 'b'
-                    : this.currentStep,
-                nextElement = this.form.querySelector('[data-step="'+ nextStepNumber +'"]'); 
+                        : step === 'optional' ?
+                            this.currentStep + 'b'
+                            : this.currentStep,
+                nextElement = this.form.querySelector('[data-step="' + nextStepNumber + '"]');
 
             if (this.currentStep !== nextStepNumber || this.currentStepOptional) {
                 this.stepChanging = true;
                 this.isValid = true;
-                
+
                 setTimeout(() => {
                     // Validate each required field
                     if (requiredFields && (step === 'next' || step === 'optional')) {
@@ -227,18 +231,18 @@ export default class EgoForm {
                             if (!fieldValid) this.isValid = false;
                         });
                     }
-        
+
                     if (currentElement && nextElement && this.isValid) {
                         vanillaFade({
-                            element: currentElement, 
-                            enter: false, 
+                            element: currentElement,
+                            enter: false,
                             time: 200,
                             displayType: 'flex',
                             callback: () => {
                                 currentElement.classList.remove('--active');
                                 vanillaFade({
-                                    element: nextElement, 
-                                    enter: true, 
+                                    element: nextElement,
+                                    enter: true,
                                     time: 200,
                                     displayType: 'flex',
                                     callback: () => {
@@ -272,7 +276,7 @@ export default class EgoForm {
 
     isControlFilled(control) {
         let parent = control.parentElement;
-        if(control.value !== '') {
+        if (control.value !== '') {
             parent.classList.add('--filled');
         } else {
             parent.classList.remove('--filled');
@@ -304,7 +308,7 @@ export default class EgoForm {
         result = this.filterFormattedQuantity(result, thousands, decimals, decimalSteps);
         return `${currency} ${result}`;
     }
-    
+
     filterPhoneNumber(value) {
         let reg = /[^\d+\-() ]*/g;
         return value.replace(reg, '');
@@ -323,7 +327,7 @@ export default class EgoForm {
     declareHandlers() {
         const self = this;
         if (this.submitBtn) {
-            this.submitBtn.addEventListener('click', function(e) { 
+            this.submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit();
                 self.submit();
@@ -378,7 +382,7 @@ export default class EgoForm {
                     this.isControlFilled(element);
                 });
             });
-        
+
         this.form.querySelectorAll('.form__control')
             .forEach(element => {
                 element.addEventListener('focus', () => {
@@ -386,19 +390,19 @@ export default class EgoForm {
                 });
             });
 
-        this.form.querySelectorAll('.'+this.classes.clearFieldError)
+        this.form.querySelectorAll('.' + this.classes.clearFieldError)
             .forEach(element => {
                 element.addEventListener('click', () => {
-                    const field = getParentByClassName({element: element, className: 'form__field'});
+                    const field = getParentByClassName({ element: element, className: 'form__field' });
                     self.validator.clearControlError(field.querySelector('.form__control'));
                 });
             });
-        
+
         // Filter number input
         this.form.querySelectorAll('.form__field.--number input')
             .forEach(element => {
                 const mainClass = this;
-                const field = getParentByClassName({element: element, className: 'form__field'});
+                const field = getParentByClassName({ element: element, className: 'form__field' });
                 const thousandsSep = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : null;
                 const decimalsSep = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
                 const decimals = field && field.dataset.decimals ? field.dataset.decimals : '';
@@ -413,16 +417,16 @@ export default class EgoForm {
                 element.addEventListener('blur', () => {
                     element.value = (thousandsSep) ?
                         mainClass.filterFormattedQuantity(element.value, thousandsSep, decimalsSep, parseInt(decimals))
-                        : 
+                        :
                         mainClass.filterNumber(element.value);
                 });
             });
-        
+
         // Filter money input
         this.form.querySelectorAll('.form__field.--money-amount input')
             .forEach(element => {
                 const mainClass = this;
-                const field = getParentByClassName({element: element, className: 'form__field'});
+                const field = getParentByClassName({ element: element, className: 'form__field' });
                 const currency = field && field.dataset.currency ? field.dataset.currency : '$';
                 const thousandsSep = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '.';
                 const decimalsSep = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
@@ -432,7 +436,7 @@ export default class EgoForm {
                     element.value = mainClass.filterNumber(element.value, [decimalsSep]);
                 }
 
-                element.addEventListener('focus',resetMoneyField);
+                element.addEventListener('focus', resetMoneyField);
                 element.addEventListener('input', resetMoneyField);
                 element.addEventListener('paste', resetMoneyField);
                 element.addEventListener('blur', () => {
