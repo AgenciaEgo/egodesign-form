@@ -96,7 +96,7 @@ export default class EgoForm {
             }
         });
         if (!this.isValid) {
-            this.submittingForm(false);
+            this.submittingForm(false, true);
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields);
             if (this.debug) showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
 
@@ -110,7 +110,7 @@ export default class EgoForm {
                 showLog(`the form was submitted!`);
                 showLog(this.serializeData(), 'data');
                 setTimeout(() => {
-                    this.submittingForm(false);
+                    this.submittingForm(false, true);
                 }, 1000);
             }
             else {
@@ -144,7 +144,7 @@ export default class EgoForm {
         }
     }
 
-    submittingForm(submitting) {
+    submittingForm(submitting, force = false) {
         let body = document.getElementsByTagName('body').item(0);
         if (submitting) {
             this.form.classList.add(this.classes.formSubmittingState);
@@ -153,7 +153,7 @@ export default class EgoForm {
             if (typeof this.onSubmitStart == 'function') this.onSubmitStart();
         }
         else {
-            if (this.resetLoaderOnSuccess) {
+            if (this.resetLoaderOnSuccess || force) {
                 this.form.classList.remove(this.classes.formSubmittingState);
                 this.submitBtn.classList.remove(this.classes.buttonSubmittingState);
                 body.classList.remove('--block');
