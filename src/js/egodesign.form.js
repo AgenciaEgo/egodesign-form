@@ -7,6 +7,7 @@ export default class EgoForm {
         classes,
         submitType,
         submitDataFormat,
+        submitUrl,
         requestHeaders,
         fieldGroups,
         serializerIgnoreList,
@@ -29,7 +30,7 @@ export default class EgoForm {
         this.submitType = submitType || 'fetch';
         this.submitDataFormat = submitDataFormat || 'formData' // formData - json
         this.requestHeaders = requestHeaders || {};
-        this.actionUrl = this.form.getAttribute('action');
+        this.actionUrl = this.form.getAttribute('action') || submitUrl || null;
         this.submitMethod = this.form.getAttribute('method') || 'POST';
         this.submitBtn = this.form.querySelector('button[type="submit"]') || null;
         this.classes = {
@@ -72,7 +73,9 @@ export default class EgoForm {
         this.debug = debug ?? false;
 
         this.declareHandlers();
-        if (this.debug) showLog('initialized!');
+        if (!this.actionUrl || this.actionUrl === '') throw new Error("The form doesn't have an action attribute or submitUrl wasn't provided.");
+
+        if (this.debug) showLog('initialized! NEW');
     }
 
 
@@ -167,11 +170,16 @@ export default class EgoForm {
         const jsonData = {};
 
         for (const pair of formData) {
-            if (!this.serializerIgnoreList.includes(pair[0])) {
-                if (pair[1] instanceof File && !pair[1].size && !pair[1].name) {
+            const [fieldName, fieldValue] = pair;
+
+            if (!this.serializerIgnoreList.includes(fieldName)) {
+                if (fieldValue instanceof File && !fieldValue.size && !fieldValue.name) {
                     continue;
                 } else {
-                    jsonData[pair[0]] = pair[1];
+                    if (jsonData.hasOwnProperty(fieldName)) {
+                        jsonData[fieldName] = [...jsonData[fieldName], fieldValue];
+                    }
+                    else jsonData[fieldName] = fieldValue;
                 }
             }
         }
@@ -188,8 +196,6 @@ export default class EgoForm {
                 }
             }
         }
-
-
 
         return returnFormData ? formData : jsonData;
     }
