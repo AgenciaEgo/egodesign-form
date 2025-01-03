@@ -210,3 +210,6 @@ Add this class names to the field element in order to apply some masks and filte
 ## Extras
 ### Toggle password visibility
 Add a button with the class name `form__toggle-password-visibility` inside the field element to toggle the control (input) type between `password` and `text`. Note: the control and the button must be siblings.
+
+### Serialization
+When the `submitDataFormat` option is set to `json`, **EgoForm** will serialize the form data using its own logic. For example, if any field with multiple values is present (like a select with the `multiple` attribute on) it will be serialized to an array.
