@@ -10,6 +10,7 @@ export default class EgoForm {
         submitUrl,
         requestHeaders,
         fieldGroups,
+        extraFields,
         serializerIgnoreList,
         customValidations,
         customValidationMessages,
@@ -61,6 +62,7 @@ export default class EgoForm {
         this.onError = onError ?? false;
         this.onBeforeSubmit = onBeforeSubmit ?? false;
         this.fieldGroups = fieldGroups ?? false;
+        this.extraFields = extraFields ?? [];
         this.hasFile = false;
         this.serializerIgnoreList = serializerIgnoreList || [];
         this.resetOnSuccess = resetOnSuccess ?? true;
@@ -75,7 +77,7 @@ export default class EgoForm {
         this.declareHandlers();
         if (!this.actionUrl || this.actionUrl === '') throw new Error("The form doesn't have an action attribute or submitUrl wasn't provided.");
 
-        if (this.debug) showLog('initialized! NEW');
+        if (this.debug) showLog('initialized!');
     }
 
 
@@ -193,6 +195,14 @@ export default class EgoForm {
                         delete jsonData[field];
                     }
                     jsonData[groupName] = group;
+                }
+            }
+        }
+
+        if (this.extraFields.length) {
+            for (const field of this.extraFields) {
+                if (field.hasOwnProperty('name') && field.hasOwnProperty('value')) {
+                    jsonData[field.name] = field.value;
                 }
             }
         }
