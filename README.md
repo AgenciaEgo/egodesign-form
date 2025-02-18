@@ -42,6 +42,12 @@ const myForm = new EgoForm({
             'mobile'
         ]
     },
+    extraFields: [
+        {
+            name: 'extra',
+            value: 'value'
+        }
+    ],
     serializerIgnoreList: ['ignore'],
     classes: {
         requiredField: '--required',
@@ -160,6 +166,7 @@ const myForm = new EgoForm({
 | *submitDataFormat* | If submitTypes is fetch, this option will be use to define de content type of the request. | `json` and `formData`
 | *requestHeaders* | If submitTypes is fetch, this option lets you pass your own headers. Should recieve an object containing valid HTTP headers. See [reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers). | Object or `null`.
 | *fieldGroups* | Group fields as nestes objects inside the body of the request. Should recieve an object containing key-value pairs, where the key is the name of the group and the value an array listing the field names. | Object or `null`.
+| *extraFields* | Add extra fields to the request body. Should recieve an array containing objects with the name and value of the field. This fields are **NOT** validated. | Array of objects or empty array.
 | *classes* | Customize some classes to match your own. Should recieve an object containig the replaced classnames. See [customizable classes] | Object or `null`.
 | *customValidations* | Define your own validations. Should recieve an object containig key-value pairs, where the key is the name of the custom `data-type`, and the value an array of validations defining a condition to be passed and a message in case it's not. | Object or `null`.
 | *customValidationMessages* | Lets you customize existing validation messages. It expects an object containing the name of the field and the custom messages inside. Refer to [Usage](#usage) to see an example. | Object or `null`.
