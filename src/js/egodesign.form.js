@@ -200,8 +200,6 @@ export default class EgoForm {
         }
 
         if (this.extraFields.length) {
-            console.log('HAS EXTRA FIELDS');
-
             for (const field of this.extraFields) {
                 if (field.hasOwnProperty('name') && field.hasOwnProperty('value')) {
                     formData.append(field.name, field.value);
