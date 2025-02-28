@@ -102,7 +102,7 @@ export default class EgoForm {
         });
         if (!this.isValid) {
             this.submittingForm(false, true);
-            if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields);
+            if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
             if (this.debug) showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
 
             if (this.scrollOnError) {
@@ -346,7 +346,7 @@ export default class EgoForm {
         if (this.submitBtn) {
             this.submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit();
+                if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit(self);
                 self.submit();
             });
         }
