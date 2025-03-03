@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES2020", // Or a more modern target
+        "module": "ESNext", // Important for Rollup
+        "strict": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./dist/js",
+    },
+    "include": [
+        "src/**/*",
+        "src/types.d.ts"
+    ]
+}

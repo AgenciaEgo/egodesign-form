@@ -1,4 +1,4 @@
-const validationMessages = {
+const validationMessages: EgoFormValidationMessages = {
     "default": {
         "empty": "Campo requerido.",
         "invalid": "Campo nó válido.",

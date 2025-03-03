@@ -1,10 +1,11 @@
 {
     "name": "@egodesign/form",
-    "version": "1.6.1",
+    "version": "1.7.0",
     "description": "JS Form component",
     "module": "dist/js/egodesign.form.esm.min.js",
     "browser": "dist/js/egodesign.form.umd.min.js",
     "main": "dist/js/egodesign.form.cjs.min.js",
+    "types": "dist/js/egodesign.form.d.ts",
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -c -w",
@@ -28,11 +29,14 @@
         "@rollup/plugin-commonjs": "^28.0.2",
         "@rollup/plugin-node-resolve": "^16.0.0",
         "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-typescript": "^12.1.2",
         "esm": "^3.2.25",
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.5.0",
         "rollup": "^4.34.8",
-        "sass": "^1.60.0"
+        "sass": "^1.60.0",
+        "tslib": "^2.8.1",
+        "typescript": "^5.8.2"
     },
     "files": [
         "dist"

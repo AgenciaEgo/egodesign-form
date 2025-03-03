@@ -1,11 +1,12 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from "@rollup/plugin-terser";
+import typescript from '@rollup/plugin-typescript';
 import pkg from './package.json' with { type: 'json' };
 
 export default [
     {
-        input: 'src/js/egodesign.form.js',
+        input: 'src/egodesign.form.ts',
         output: {
             name: 'egodesign.form',
             file: pkg.browser,
@@ -15,14 +16,16 @@ export default [
         plugins: [
             terser(),
             resolve(),
-            commonjs()
+            commonjs(),
+            typescript()
         ]
     },
     {
-        input: 'src/js/egodesign.form.js',
+        input: 'src/egodesign.form.ts',
         external: ['ms'],
         plugins: [
-            terser()
+            terser(),
+            typescript()
         ],
         output: [
             {
