@@ -1,5 +1,5 @@
 # EgoForm
-Lightweight, dependency-free JavaScript library for comprehensive form validation and submission. Customize validation rules with ease and seamlessly integrate into any vanilla project.
+Lightweight, dependency-free JavaScript/Typescript library for comprehensive form validation and submission. Customize validation rules with ease and seamlessly integrate into any vanilla project.
 </br></br>
 
 ![NPM Version](https://img.shields.io/npm/v/@egodesign/form)
@@ -11,6 +11,7 @@ Lightweight, dependency-free JavaScript library for comprehensive form validatio
 - Customization: Control class names and error messages to match your design.
 - Flexible Submission: Choose between fetch, get, or post methods for form submission.
 - Event Handling: Respond to validation errors, form submission events, and successful/failed responses.
+- TypeScript Support: Fully typed and well-documented.
 
 
 ## Usage:
@@ -27,6 +28,10 @@ yarn add @egodesign/form
 <br>
 
 2. Import the **`EgoForm`** class into your file and create as many instances as needed.
+
+<details>
+<summary>JavaScript</summary>
+
 ```js
 import EgoForm from '@egodesign/form';
 
@@ -80,6 +85,66 @@ const myForm = new EgoForm({
     onError: err => console.log('Error', err)
 });
 ```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import EgoForm from '@egodesign/form';
+
+const myForm: EgoForm = new EgoForm({
+    element: document.getElementById('myForm'),
+    submitType: 'fetch',
+    debug: true,
+    submitDataFormat: 'formData',
+    requestHeaders: {},
+    fieldGroups: {
+        phone_numbers: [
+            'phone',
+            'mobile'
+        ]
+    },
+    extraFields: [
+        {
+            name: 'extra',
+            value: 'value'
+        }
+    ],
+    serializerIgnoreList: ['ignore'],
+    classes: {
+        requiredField: '--required',
+        requiredIfFilledField: '--required-if-filled',
+        fieldHasError: '--has-error',
+        controlHasError: 'is-danger',
+        hiddenErrorMessage: 'is-hidden',
+        formSubmittingState: '--submitting',
+        buttonSubmittingState: 'is-loading'
+    },
+    customValidations: {
+        test: [{
+            name: 'isValid',
+            condition: (value: string | number) => value === 'testing',
+            message: 'This field value should be "testing".'
+        }]
+    },
+    customValidationsMessages: {
+        "fieldName": {
+            "empty": "message",
+            "invalid": "message",
+        }
+    },
+    onValidationError: (fields: string[], instance: EgoForm) => {
+            console.log(instance, fields);
+        },
+        onStepChange: (prev: string, next: string) => console.log(prev, next),
+        onSubmitStart: () => console.log('Submit start'),
+        onSubmitEnd: () => console.log('Submit end'),
+        onSuccess: (resp: Response) => console.log('Success', resp),
+        onError: (err: Error) => console.log('Error', err)
+});
+```
+</details>
 
 ## HTML structure sample:
 ```html
