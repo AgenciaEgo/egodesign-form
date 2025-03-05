@@ -17,7 +17,12 @@ export default [
             terser(),
             resolve(),
             commonjs(),
-            typescript()
+            typescript({
+                tsconfig: "./tsconfig.json",
+                compilerOptions: {
+                    target: "ES2020" // Or a more modern target
+                }
+            })
         ]
     },
     {
@@ -25,7 +30,12 @@ export default [
         external: ['ms'],
         plugins: [
             terser(),
-            typescript()
+            typescript({
+                tsconfig: "./tsconfig.json",
+                compilerOptions: {
+                    target: "ES2020" // Or a more modern target
+                }
+            })
         ],
         output: [
             {

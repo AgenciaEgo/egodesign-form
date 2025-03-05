@@ -237,6 +237,7 @@ const myForm: EgoForm = new EgoForm({
 | *customValidationMessages* | Lets you customize existing validation messages. It expects an object containing the name of the field and the custom messages inside. Refer to [Usage](#usage) to see an example. | Object or `null`.
 | *resetOnSuccess* | This option completely resets the form and its fields. | Boolean, default `true`.
 | *scrollOnError* | This option smoothly scrolls the page to show the first field with errors. Useful when building long forms to make sure the user sees the errors. | Boolean, default `true`.
+| *disbleStepsTransition* | When building a multistep form, this option disables the built-in fade transition applied to each step change. If set to true it can be used together with the onStepChange event to apply your own method. | Boolean, default `false`.
 | *debug* | On debug mode, the form won't be submitted. Intead, every step will be logged into the dev console of the browser. | Boolean, default `false`.
 <br>
 

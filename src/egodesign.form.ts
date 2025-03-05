@@ -24,6 +24,7 @@ export default class EgoForm implements EgoFormInterface {
     currentStep: number;
     currentStepOptional: boolean;
     stepChanging: boolean;
+    disbleStepsTransition: boolean;
     isValid: boolean;
     hasFile: boolean;
     resetOnSuccess: boolean;
@@ -55,6 +56,7 @@ export default class EgoForm implements EgoFormInterface {
         resetLoaderOnSuccess,
         scrollOnError,
         preventSubmit,
+        disbleStepsTransition,
         debug
     }: EgoFormOptions) {
         this.form = element;
@@ -100,6 +102,7 @@ export default class EgoForm implements EgoFormInterface {
         const currentStepElement: HTMLElement | null = this.form.querySelector('.form__step.--active')
         this.currentStep = currentStepElement ? Number(currentStepElement.dataset.step) : 0;
         this.currentStepOptional = false;
+        this.disbleStepsTransition = disbleStepsTransition ?? false;
         this.stepChanging = false;
         this.preventSubmit = preventSubmit ?? false;
         this.debug = debug ?? false;
@@ -131,6 +134,8 @@ export default class EgoForm implements EgoFormInterface {
                 this.isValid = false;
             }
         });
+
+
         if (!this.isValid) {
             this.submittingForm({ submitting: false, force: true });
 
@@ -275,16 +280,24 @@ export default class EgoForm implements EgoFormInterface {
                 this.stepChanging = true;
                 this.isValid = true;
 
-                setTimeout(() => {
-                    // Validate each required field
-                    if (requiredFields && (step === 'next' || step === 'optional')) {
-                        requiredFields.forEach(field => {
-                            let fieldValid = this.validator.validateField({ field });
-                            if (!fieldValid) this.isValid = false;
-                        });
+                // Validate each required field
+                if (requiredFields && (step === 'next' || step === 'optional')) {
+                    requiredFields.forEach(field => this.isValid = this.validator.validateField({ field }));
+                }
+
+                if (currentElement && nextElement && this.isValid) {
+                    const resumeNextStep = () => {
+                        nextElement.classList.add('--active');
+                        this.stepChanging = false;
+                        this.currentStepOptional = step === 'optional';
+                        this.currentStep = parseInt(nextStepNumber as string);
+                        if (typeof this.onStepChange == 'function') this.onStepChange(current.toString(), nextStepNumber.toString());
                     }
 
-                    if (currentElement && nextElement && this.isValid) {
+                    if (this.disbleStepsTransition) {
+                        currentElement.classList.remove('--active');
+                        resumeNextStep();
+                    } else {
                         vanillaFade({
                             element: currentElement,
                             enter: false,
@@ -297,19 +310,13 @@ export default class EgoForm implements EgoFormInterface {
                                     enter: true,
                                     time: 200,
                                     displayType: 'flex',
-                                    callback: () => {
-                                        nextElement.classList.add('--active');
-                                        this.stepChanging = false;
-                                        this.currentStepOptional = step === 'optional';
-                                        this.currentStep = parseInt(nextStepNumber as string);
-                                        if (typeof this.onStepChange == 'function') this.onStepChange(current.toString(), nextStepNumber.toString());
-                                    }
+                                    callback: resumeNextStep
                                 });
                             }
                         });
                     }
-                    else this.stepChanging = false;
-                }, 50);
+                }
+                else this.stepChanging = false;
             }
         }
     }
@@ -354,7 +361,7 @@ export default class EgoForm implements EgoFormInterface {
         decimals?: string,
         decimalSteps?: number
     }): string {
-        const sliced: string[] = decimals ? num.toString().split(decimals) : [num.toString()];
+        const sliced: string[] = decimals ? num.toString().trim().split(decimals) : [num.toString()];
         const reg: RegExp = new RegExp(/\B(?=(\d{3})+(?!\d))/g);
         const root: string = sliced[0].replace(reg, thousands);
 
@@ -388,7 +395,7 @@ export default class EgoForm implements EgoFormInterface {
 
     filterPhoneNumber({ number }: { number: string }): string {
         let reg = new RegExp(/[^\d+\-() ]*/g);
-        return number.replace(reg, '');
+        return number.replace(reg, '').trim();
     }
 
     togglePasswordVisibility({ btn }: { btn: HTMLElement }) {

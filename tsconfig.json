@@ -2,6 +2,11 @@
     "compilerOptions": {
         "target": "ES2020", // Or a more modern target
         "module": "ESNext", // Important for Rollup
+        "lib": [
+            "ES2020",
+            "dom",
+            "dom.iterable"
+        ],
         "strict": true,
         "esModuleInterop": true,
         "declaration": true,
@@ -10,6 +15,7 @@
     },
     "include": [
         "src/**/*",
-        "src/types.d.ts"
+        "src/types.d.ts",
+        "vitest/globals"
     ]
 }

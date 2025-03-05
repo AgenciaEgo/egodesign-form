@@ -44,6 +44,7 @@ interface EgoFormOptions {
     onSuccess?: Function;
     onError?: Function;
     onBeforeSubmit?: Function;
+    disbleStepsTransition?: boolean;
     resetOnSuccess?: boolean;
     resetLoaderOnSuccess?: boolean;
     scrollOnError?: boolean;
@@ -74,6 +75,7 @@ interface EgoFormInterface {
     currentStep: number;
     currentStepOptional: boolean;
     stepChanging: boolean;
+    disbleStepsTransition?: boolean;
     isValid: boolean;
     hasFile: boolean;
     resetOnSuccess: boolean;

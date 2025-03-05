@@ -24,6 +24,7 @@ export default class EgoForm implements EgoFormInterface {
     currentStep: number;
     currentStepOptional: boolean;
     stepChanging: boolean;
+    disbleStepsTransition: boolean;
     isValid: boolean;
     hasFile: boolean;
     resetOnSuccess: boolean;
@@ -31,7 +32,7 @@ export default class EgoForm implements EgoFormInterface {
     scrollOnError: boolean;
     preventSubmit: boolean;
     debug: boolean;
-    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeSubmit, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, preventSubmit, debug }: EgoFormOptions);
+    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeSubmit, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, preventSubmit, disbleStepsTransition, debug }: EgoFormOptions);
     submit(): void;
     resumeSubmit(): void;
     submittingForm({ submitting, force }: {
