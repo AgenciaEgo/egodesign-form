@@ -157,10 +157,11 @@ export default class EgoForm implements EgoFormInterface {
             }
             else {
                 if (this.submitType == 'fetch' && this.actionUrl) {
-                    const body: BodyInit | FormData = this.serializeData({ returnFormData: this.submitDataFormat === 'json' });
+                    const body: BodyInit | FormData = this.serializeData({ returnFormData: this.submitDataFormat === 'formData' });
+
                     fetch(this.actionUrl, {
                         method: this.submitMethod,
-                        headers: this.submitDataFormat === 'json' ? { 'Content-Type': 'application/json', ...this.requestHeaders } : { ...this.requestHeaders },
+                        headers: { ...this.requestHeaders },
                         body: body,
                     })
                         .then((resp) => {
