@@ -11,7 +11,7 @@ interface EgoFormCSSClassess {
     controlHasError?: string;
 }
 
-type EgoFormSubmitType = 'fetch' | 'get' | 'post';
+type EgoFormSubmitType = 'fetch' | 'get' | 'post' | 'put' | 'delete' | 'patch';
 
 type EgoFormDataFormat = 'json' | 'formData';
 
