@@ -1,6 +1,6 @@
 {
     "name": "@egodesign/form",
-    "version": "1.7.0",
+    "version": "1.7.1",
     "type": "module",
     "description": "JS/TS Form component",
     "module": "dist/js/egodesign.form.esm.min.js",
