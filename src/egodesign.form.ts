@@ -1,4 +1,4 @@
-import { vanillaFade, isInViewport, getParentByClassName, showLog } from './modules/tools';
+import { vanillaFade, isInViewport, getParentByClassName, showLog, scrollIntoViewWithOffset } from './modules/tools';
 import EgoFormValidator from './modules/ValidationClass';
 
 export default class EgoForm implements EgoFormInterface {
@@ -30,6 +30,7 @@ export default class EgoForm implements EgoFormInterface {
     resetOnSuccess: boolean;
     resetLoaderOnSuccess: boolean;
     scrollOnError: boolean;
+    scrollOnErrorOffset: number;
     preventSubmit: boolean;
     debug: boolean;
 
@@ -55,6 +56,7 @@ export default class EgoForm implements EgoFormInterface {
         resetOnSuccess,
         resetLoaderOnSuccess,
         scrollOnError,
+        scrollOnErrorOffset,
         preventSubmit,
         disbleStepsTransition,
         debug
@@ -99,6 +101,7 @@ export default class EgoForm implements EgoFormInterface {
         this.resetOnSuccess = resetOnSuccess ?? true;
         this.resetLoaderOnSuccess = resetLoaderOnSuccess ?? true;
         this.scrollOnError = scrollOnError ?? true;
+        this.scrollOnErrorOffset = scrollOnErrorOffset || 0;
         const currentStepElement: HTMLElement | null = this.form.querySelector('.form__step.--active')
         this.currentStep = currentStepElement ? Number(currentStepElement.dataset.step) : 0;
         this.currentStepOptional = false;
@@ -144,7 +147,9 @@ export default class EgoForm implements EgoFormInterface {
 
             if (this.scrollOnError) {
                 const firstInvalidField: HTMLElement | null = this.form.querySelector(`.form__field.${this.classes.fieldHasError}`);
-                if (firstInvalidField && !isInViewport({ element: firstInvalidField })) firstInvalidField.scrollIntoView({ behavior: 'smooth' });
+                if (firstInvalidField && !isInViewport({ element: firstInvalidField })) {
+                    scrollIntoViewWithOffset(firstInvalidField, this.scrollOnErrorOffset as number || 0);
+                }
             }
         }
         else {

@@ -48,6 +48,7 @@ interface EgoFormOptions {
     resetOnSuccess?: boolean;
     resetLoaderOnSuccess?: boolean;
     scrollOnError?: boolean;
+    scrollOnErrorOffset?: number;
     preventSubmit?: boolean;
     debug?: boolean;
 }
@@ -81,6 +82,7 @@ interface EgoFormInterface {
     resetOnSuccess: boolean;
     resetLoaderOnSuccess: boolean;
     scrollOnError: boolean;
+    scrollOnErrorOffset: number | null;
     preventSubmit: boolean;
     debug: boolean;
 }

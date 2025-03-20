@@ -76,3 +76,14 @@ export function showLog(msg: string, type: 'log' | 'data' = 'log') {
         console.table(msg);
     }
 }
+
+export function scrollIntoViewWithOffset(element: HTMLElement | null, offset: number): void {
+    if (!element) return;
+    window.scrollTo({
+        behavior: 'smooth',
+        top:
+            element.getBoundingClientRect().top -
+            document.body.getBoundingClientRect().top -
+            offset,
+    })
+}
