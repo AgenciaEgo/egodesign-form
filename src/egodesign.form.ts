@@ -116,7 +116,6 @@ export default class EgoForm implements EgoFormInterface {
         if (this.debug) showLog('initialized!');
     }
 
-
     submit() {
         if (!this.preventSubmit) this.resumeSubmit();
     }
@@ -414,15 +413,17 @@ export default class EgoForm implements EgoFormInterface {
         }
     }
 
-    declareHandlers() {
+    declareHandlers(isRefresh: boolean = false) {
         const self: EgoForm = this;
 
         if (this.submitBtn) {
-            this.submitBtn.addEventListener('click', function (e: Event) {
-                e.preventDefault();
-                if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit(self);
-                self.submit();
-            });
+            if (!isRefresh) {
+                this.submitBtn.addEventListener('click', function (e: Event) {
+                    e.preventDefault();
+                    if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit(self);
+                    self.submit();
+                });
+            }
         }
         else {
             throw new Error(`There's no submit button in this form "${this.form.id}".`);
@@ -450,17 +451,19 @@ export default class EgoForm implements EgoFormInterface {
                 control?.addEventListener('input', eventFunction);
             });
 
-        this.form.querySelectorAll('.form__next-step').forEach((element: Element) => {
-            element.addEventListener('click', self.nextStep.bind(self));
-        });
+        if (!isRefresh) {
+            this.form.querySelectorAll('.form__next-step').forEach((element: Element) => {
+                element.addEventListener('click', self.nextStep.bind(self));
+            });
 
-        this.form.querySelectorAll('.form__optional-step').forEach((element: Element) => {
-            element.addEventListener('click', self.optionalStep.bind(self));
-        });
+            this.form.querySelectorAll('.form__optional-step').forEach((element: Element) => {
+                element.addEventListener('click', self.optionalStep.bind(self));
+            });
 
-        this.form.querySelectorAll('.form__prev-step').forEach((element: Element) => {
-            element.addEventListener('click', self.prevStep.bind(self));
-        });
+            this.form.querySelectorAll('.form__prev-step').forEach((element: Element) => {
+                element.addEventListener('click', self.prevStep.bind(self));
+            });
+        }
 
         this.form.querySelectorAll<EgoFormControl>('.form__control')
             .forEach(element => {
@@ -556,5 +559,9 @@ export default class EgoForm implements EgoFormInterface {
             .forEach(btn => {
                 btn.addEventListener('click', () => this.togglePasswordVisibility({ btn }));
             });
+    }
+
+    refresh() {
+        this.declareHandlers(true);
     }
 }
