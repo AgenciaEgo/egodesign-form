@@ -13,3 +13,4 @@ export declare const isInViewport: ({ element }: {
     element: HTMLElement;
 }) => boolean;
 export declare function showLog(msg: string, type?: 'log' | 'data'): void;
+export declare function scrollIntoViewWithOffset(element: HTMLElement | null, offset: number): void;

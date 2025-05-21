@@ -30,9 +30,10 @@ export default class EgoForm implements EgoFormInterface {
     resetOnSuccess: boolean;
     resetLoaderOnSuccess: boolean;
     scrollOnError: boolean;
+    scrollOnErrorOffset: number;
     preventSubmit: boolean;
     debug: boolean;
-    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeSubmit, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, preventSubmit, disbleStepsTransition, debug }: EgoFormOptions);
+    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeSubmit, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventSubmit, disbleStepsTransition, debug }: EgoFormOptions);
     submit(): void;
     resumeSubmit(): void;
     submittingForm({ submitting, force }: {
@@ -75,5 +76,6 @@ export default class EgoForm implements EgoFormInterface {
     togglePasswordVisibility({ btn }: {
         btn: HTMLElement;
     }): void;
-    declareHandlers(): void;
+    declareHandlers(isRefresh?: boolean): void;
+    refresh(): void;
 }
