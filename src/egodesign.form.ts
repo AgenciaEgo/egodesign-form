@@ -112,14 +112,13 @@ export default class EgoForm implements EgoFormInterface {
 
         this.declareHandlers();
         if (!this.actionUrl || this.actionUrl === '') throw new Error("The form doesn't have an action attribute or submitUrl wasn't provided.");
-
+        if (!this.submitBtn) throw new Error(`There's no submit button in this form "${this.form.id}".`);
         if (this.debug) showLog('initialized!');
     }
 
     submit() {
         if (!this.preventSubmit) this.resumeSubmit();
     }
-
     resumeSubmit() {
         if (this.debug) showLog(`submitting using ${this.submitType}!`);
 
@@ -413,20 +412,97 @@ export default class EgoForm implements EgoFormInterface {
         }
     }
 
+    // Event Handlers
+    #submitButtonHanler(e: Event) {
+        e.preventDefault();
+        if (typeof this.onBeforeSubmit == 'function') this.onBeforeSubmit(this);
+        this.submit();
+    }
+
+    #onBlurValidationHandler(e: Event) {
+        const field: EventTarget | null = e.target;
+        const fieldValid: boolean = field ? this.validator.validateField({ field }) : false;
+        if (field && !fieldValid) this.isValid = false;
+    }
+
+    #onInputValidationHandler(e: Event) {
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        const field: HTMLElement | null = getParentByClassName({ element: control, className: 'form__field' });
+        const fieldValid: boolean = this.validator.validateField({ field });
+        if (fieldValid) this.validator.clearControlError({ control });
+    }
+
+    #controlFilledHandler(e: Event) {
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        this.isControlFilled({ control });
+    }
+
+    #clearControlErrorHandler(e: Event) {
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        this.validator.clearControlError({ control });
+    }
+
+    #clearFieldErrorHandler(e: Event) {
+        const control: HTMLElement | null = e.target as HTMLElement;
+        const field: HTMLElement | null = getParentByClassName({ element: control, className: 'form__field' });
+        if (field) this.validator.clearControlError({ control: field.querySelector('.form__control') });
+    }
+
+    #filterFieldNumberHandler(e: Event) {
+        const eventType: string = e.type;
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        const field: HTMLElement | null = getParentByClassName({ element: control, className: 'form__field' });
+        const decimalsSeparator: string = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
+        const thousandsSeparator: string = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '';
+        const decimals: string = field && field.dataset.decimals ? field.dataset.decimals : '';
+
+        if (eventType === 'blur') {
+            if (control.value === thousandsSeparator) {
+                control.value = this.filterFormattedQuantity({ num: control.value, thousands: thousandsSeparator, decimals: decimalsSeparator, decimalSteps: parseInt(decimals, 10) });
+            } else {
+                control.value = this.filterNumber({ value: control.value, ignoreList: [] });
+            }
+        } else {
+            control.value = this.filterNumber({ value: control.value, ignoreList: [decimalsSeparator] });
+        }
+    }
+
+    #filterFieldMoneyHandler(e: Event) {
+        const eventType: string = e.type;
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        const field: HTMLElement | null = getParentByClassName({ element: control, className: 'form__field' });
+        const decimalsSeparator: string = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
+        if (eventType === 'blur') {
+            const currency: string = field && field.dataset.currency ? field.dataset.currency : '$';
+            const thousandsSeparator: string = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '';
+            const decimals: string = field && field.dataset.decimals ? field.dataset.decimals : '';
+            control.value = this.filterMoneyAmount({
+                num: control.value,
+                currency,
+                thousands: thousandsSeparator,
+                decimals: decimalsSeparator,
+                decimalSteps: parseInt(decimals, 10)
+            });
+        } else {
+            control.value = this.filterNumber({ value: control.value, ignoreList: [decimalsSeparator] });
+        }
+    }
+
+    #filterFieldPhoneHandler(e: Event) {
+        const control: EgoFormControl | null = e.target as EgoFormControl;
+        control.value = this.filterPhoneNumber({ number: control.value })
+    }
+
+    #togglePasswordVisibilityHandler(e: Event) {
+        const button: HTMLButtonElement | null = e.target as HTMLButtonElement;
+        this.togglePasswordVisibility({ btn: button });
+    }
+
     declareHandlers(isRefresh: boolean = false) {
         const self: EgoForm = this;
 
-        if (this.submitBtn) {
-            if (!isRefresh) {
-                this.submitBtn.addEventListener('click', function (e: Event) {
-                    e.preventDefault();
-                    if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit(self);
-                    self.submit();
-                });
-            }
-        }
-        else {
-            throw new Error(`There's no submit button in this form "${this.form.id}".`);
+        if (!isRefresh && this.submitBtn) {
+            this.submitBtn.addEventListener('click', self.#submitButtonHanler);
         }
 
         this.validator.realTimeValidations({ form: this.form });
@@ -434,21 +510,14 @@ export default class EgoForm implements EgoFormInterface {
         // OnBlur validation
         this.form.querySelectorAll<HTMLElement>(`.form__field.${this.classes.validateOnBlur}`)
             .forEach(field => {
-                field.querySelector('.form__control')?.addEventListener('blur', () => {
-                    const fieldValid: boolean = this.validator.validateField({ field });
-                    if (!fieldValid) this.isValid = false;
-                });
+                field.querySelector('.form__control')?.addEventListener('blur', this.#onBlurValidationHandler);
             });
 
         // OnInput validation
         this.form.querySelectorAll<HTMLElement>(`.form__field.${this.classes.validateOnInput}`)
             .forEach(field => {
                 const control: EgoFormControl | null = field.querySelector('.form__control');
-                const eventFunction = () => {
-                    const fieldValid: boolean = this.validator.validateField({ field });
-                    if (fieldValid) this.validator.clearControlError({ control });
-                }
-                control?.addEventListener('input', eventFunction);
+                control?.addEventListener('input', this.#onInputValidationHandler);
             });
 
         if (!isRefresh) {
@@ -469,99 +538,47 @@ export default class EgoForm implements EgoFormInterface {
             .forEach(element => {
                 this.isControlFilled({ control: element });
 
-                element.addEventListener('keyup', () => {
-                    this.isControlFilled({ control: element });
-                });
-                element.addEventListener('change', () => {
-                    this.isControlFilled({ control: element });
-                });
+                element.addEventListener('keyup', this.#controlFilledHandler);
+                element.addEventListener('change', this.#controlFilledHandler);
             });
 
         this.form.querySelectorAll<EgoFormControl>('.form__control')
-            .forEach(control => {
-                control.addEventListener('focus', () => {
-                    this.validator.clearControlError({ control });
-                });
-            });
+            .forEach(control => control.addEventListener('focus', this.#clearControlErrorHandler));
 
         this.form.querySelectorAll<HTMLElement>('.' + this.classes.clearFieldError)
-            .forEach(element => {
-                element.addEventListener('click', () => {
-                    const field: HTMLElement | null = getParentByClassName({ element, className: 'form__field' });
-                    if (field) self.validator.clearControlError({ control: field.querySelector('.form__control') });
-                });
-            });
+            .forEach(element => element.addEventListener('click', this.#clearFieldErrorHandler));
 
         // Filter number input
         this.form.querySelectorAll<EgoFormControl>('.form__field.--number input')
             .forEach(element => {
-                const mainClass: EgoForm = this;
-                const field: HTMLElement | null = getParentByClassName({ element: element, className: 'form__field' });
-                const thousandsSep: string = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '';
-                const decimalsSep: string = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
-                const decimals: string = field && field.dataset.decimals ? field.dataset.decimals : '';
-
-                function resetNumberField() {
-                    element.value = mainClass.filterNumber({ value: element.value, ignoreList: [decimalsSep] });
-                }
-
-                element.addEventListener('focus', resetNumberField);
-                element.addEventListener('input', resetNumberField);
-                element.addEventListener('paste', resetNumberField);
-                element.addEventListener('blur', () => {
-                    element.value = (thousandsSep) ?
-                        mainClass.filterFormattedQuantity({ num: element.value, thousands: thousandsSep, decimals: decimalsSep, decimalSteps: parseInt(decimals) })
-                        :
-                        mainClass.filterNumber({ value: element.value });
-                });
+                element.addEventListener('focus', this.#filterFieldNumberHandler);
+                element.addEventListener('input', this.#filterFieldNumberHandler);
+                element.addEventListener('paste', this.#filterFieldNumberHandler);
+                element.addEventListener('blur', this.#filterFieldNumberHandler)
             });
 
         // Filter money input
         this.form.querySelectorAll<EgoFormControl>('.form__field.--money-amount input')
             .forEach(element => {
-                const mainClass: EgoForm = this;
-                const field: HTMLElement | null = getParentByClassName({ element: element, className: 'form__field' });
-                const currency: string = field && field.dataset.currency ? field.dataset.currency : '$';
-                const thousandsSep: string = field && field.dataset.thousandsSeparator ? field.dataset.thousandsSeparator : '.';
-                const decimalsSep: string = field && field.dataset.decimalSeparator ? field.dataset.decimalSeparator : '';
-                const decimals: string = field && field.dataset.decimals ? field.dataset.decimals : '';
-
-                function resetMoneyField() {
-                    element.value = mainClass.filterNumber({ value: element.value, ignoreList: [decimalsSep] });
-                }
-
-                element.addEventListener('focus', resetMoneyField);
-                element.addEventListener('input', resetMoneyField);
-                element.addEventListener('paste', resetMoneyField);
-                element.addEventListener('blur', () => {
-                    element.value = this.filterMoneyAmount({
-                        num: element.value,
-                        currency,
-                        thousands: thousandsSep,
-                        decimals: decimalsSep,
-                        decimalSteps: parseInt(decimals)
-                    });
-                });
+                element.addEventListener('focus', this.#filterFieldMoneyHandler);
+                element.addEventListener('input', this.#filterFieldMoneyHandler);
+                element.addEventListener('paste', this.#filterFieldMoneyHandler);
+                element.addEventListener('blur', this.#filterFieldMoneyHandler);
             });
 
         // Filter phone input
         this.form.querySelectorAll<EgoFormControl>('.form__field.--phone input')
             .forEach(element => {
-                element.addEventListener('input', () => {
-                    element.value = this.filterPhoneNumber({ number: element.value });
-                });
-                element.addEventListener('paste', () => {
-                    element.value = this.filterPhoneNumber({ number: element.value });
-                });
+                element.addEventListener('input', this.#filterFieldPhoneHandler);
+                element.addEventListener('paste', this.#filterFieldPhoneHandler);
             });
 
         this.form.querySelectorAll<HTMLElement>('.form__toggle-password-visibility')
-            .forEach(btn => {
-                btn.addEventListener('click', () => this.togglePasswordVisibility({ btn }));
-            });
+            .forEach(btn => btn.addEventListener('click', this.#togglePasswordVisibilityHandler));
     }
 
     refresh() {
+        console.log('Refreshing form...');
         this.declareHandlers(true);
     }
 }

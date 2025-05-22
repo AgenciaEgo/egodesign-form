@@ -1,4 +1,5 @@
 export default class EgoForm implements EgoFormInterface {
+    #private;
     form: HTMLFormElement;
     submitBtn: HTMLButtonElement | null;
     classes: EgoFormCSSClassess;
