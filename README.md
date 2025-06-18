@@ -66,7 +66,7 @@ const myForm = new EgoForm({
     customValidations: {
         test: [{
             name: 'isValid',
-            condition: (value) => value === 'testing',
+            condition: (value, fieldName) => value === 'testing',
             message: 'This field value should be "testing".'
         }]
     },
@@ -77,9 +77,10 @@ const myForm = new EgoForm({
         }
     },
     onStepChange: (previous, next) => console.log(current, next),
-    onBeforeSubmit: () => console.log('Before submit'),
+    onBeforeValidation: instance => instance.resumeValidation(),
     onValidationError: fields => console.log(fields),
     onSubmitStart: () => console.log('Submit start'),
+    onBeforeSubmission: instance => instance.resumeSubmission(),
     onSubmitEnd: () => console.log('Submit end'),
     onSuccess: resp => console.log('Success', resp),
     onError: err => console.log('Error', err)
@@ -124,7 +125,7 @@ const myForm: EgoForm = new EgoForm({
     customValidations: {
         test: [{
             name: 'isValid',
-            condition: (value: string | number) => value === 'testing',
+            condition: (value: string | number, fieldName: string) => value === 'testing',
             message: 'This field value should be "testing".'
         }]
     },
@@ -134,14 +135,14 @@ const myForm: EgoForm = new EgoForm({
             "invalid": "message",
         }
     },
-    onValidationError: (fields: string[], instance: EgoForm) => {
-            console.log(instance, fields);
-        },
-        onStepChange: (prev: string, next: string) => console.log(prev, next),
-        onSubmitStart: () => console.log('Submit start'),
-        onSubmitEnd: () => console.log('Submit end'),
-        onSuccess: (resp: Response) => console.log('Success', resp),
-        onError: (err: Error) => console.log('Error', err)
+    onStepChange: (prev: string, next: string) => console.log(prev, next),
+    onBeforeValidation: (instance: EgoForm) => instance.resumeValidation(),
+    onValidationError: (fields: string[], instance: EgoForm) => console.log(instance, fields),
+    onSubmitStart: () => console.log('Submit start'),
+    onBeforeSubmission: (instance: EgoForm) => instance.resumeSubmission(),
+    onSubmitEnd: () => console.log('Submit end'),
+    onSuccess: (resp: Response) => console.log('Success', resp),
+    onError: (err: Error) => console.log('Error', err)
 });
 ```
 </details>
@@ -233,11 +234,13 @@ const myForm: EgoForm = new EgoForm({
 | *fieldGroups* | Group fields as nestes objects inside the body of the request. Should recieve an object containing key-value pairs, where the key is the name of the group and the value an array listing the field names. | Object or `null`.
 | *extraFields* | Add extra fields to the request body. Should recieve an array containing objects with the name and value of the field. This fields are **NOT** validated. | Array of objects or empty array.
 | *classes* | Customize some classes to match your own. Should recieve an object containig the replaced classnames. See [customizable classes] | Object or `null`.
-| *customValidations* | Define your own validations. Should recieve an object containig key-value pairs, where the key is the name of the custom `data-type`, and the value an array of validations defining a condition to be passed and a message in case it's not. | Object or `null`.
+| *customValidations* | Define your own validations. Should recieve an object containig key-value pairs, where the key is the name of the custom `data-type`, and the value an array of validations defining a condition function to be passed and a message in case it's not. | Object or `null`.
 | *customValidationMessages* | Lets you customize existing validation messages. It expects an object containing the name of the field and the custom messages inside. Refer to [Usage](#usage) to see an example. | Object or `null`.
 | *resetOnSuccess* | This option completely resets the form and its fields. | Boolean, default `true`.
 | *scrollOnError* | This option smoothly scrolls the page to show the first field with errors. Useful when building long forms to make sure the user sees the errors. | Boolean, default `true`.
 | *disbleStepsTransition* | When building a multistep form, this option disables the built-in fade transition applied to each step change. If set to true it can be used together with the onStepChange event to apply your own method. | Boolean, default `false`.
+| *preventValidation* | Prevents the form from being validated. Useful in combination with onBeforeValidation event and the `resumeValidation()` method. | Boolean, default `false`.
+| *preventSubmission* | After validation passed, it prevents the form from being submitted. Useful in combination with onBeforeSubmission event and the `resumeSubmission()` method. | Boolean, default `false`.
 | *debug* | On debug mode, the form won't be submitted. Intead, every step will be logged into the dev console of the browser. | Boolean, default `false`.
 <br>
 
@@ -246,8 +249,9 @@ const myForm: EgoForm = new EgoForm({
 | --- | ----------- | ----------- |
 | *onStepChange* | Event triggered every time there's a step change. Only available for stepped forms. It returns the previous and the next steps. | An anonymous function or `null`.
 | *onValidationError* | Event triggered when there's any validation error. The callback function receives an array containing the names of invalid fields and a reference to the instance itself. | An anonymous function or `null`.
-| *onBeforeSubmit* | Event triggered before the submit starts. The callback function receives a reference to the instance itself | An anonymous function or `null`.
+| *onBeforeValidation* | Event triggered before the validation starts. The callback function receives a reference to the instance itself | An anonymous function or `null`.
 | *onSubmitStart* | Event triggered when the submit starts. | An anonymous function or `null`.
+| *onBeforeSubmission* | Event triggered before the submission starts, right after successful validation. The callback function receives a reference to the instance itself | An anonymous function or `null`.
 | *onSubmitEnd* | Event triggered when the submit ends, regardless of the outcome. | An anonymous function or `null`.
 | *onSuccess* | Event triggered when the request results successful. | An anonymous function or `null`.
 | *onError* | Event triggered when the response returns an error. | An anonymous function or `null`.
