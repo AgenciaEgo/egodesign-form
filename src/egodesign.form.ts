@@ -20,7 +20,11 @@ export default class EgoForm implements EgoFormInterface {
     onSubmitEnd: Function | null;
     onSuccess: Function | null;
     onError: Function | null;
+    onBeforeValidation: Function | null;
+    // For backward compatibility 1.8
     onBeforeSubmit: Function | null;
+    // For backward compatibility 1.8
+    onBeforeSubmission: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     stepChanging: boolean;
@@ -31,7 +35,9 @@ export default class EgoForm implements EgoFormInterface {
     resetLoaderOnSuccess: boolean;
     scrollOnError: boolean;
     scrollOnErrorOffset: number;
+    preventValidation: boolean;
     preventSubmit: boolean;
+    preventSubmission: boolean;
     debug: boolean;
 
     constructor({
@@ -52,12 +58,16 @@ export default class EgoForm implements EgoFormInterface {
         onSubmitEnd,
         onSuccess,
         onError,
+        onBeforeValidation,
         onBeforeSubmit,
+        onBeforeSubmission,
         resetOnSuccess,
         resetLoaderOnSuccess,
         scrollOnError,
         scrollOnErrorOffset,
+        preventValidation,
         preventSubmit,
+        preventSubmission,
         disbleStepsTransition,
         debug
     }: EgoFormOptions) {
@@ -93,7 +103,9 @@ export default class EgoForm implements EgoFormInterface {
         this.onSubmitEnd = onSubmitEnd ?? null;
         this.onSuccess = onSuccess ?? null;
         this.onError = onError ?? null;
+        this.onBeforeValidation = onBeforeValidation ?? null;
         this.onBeforeSubmit = onBeforeSubmit ?? null;
+        this.onBeforeSubmission = onBeforeSubmission ?? null;
         this.fieldGroups = fieldGroups ?? null;
         this.extraFields = extraFields ?? [];
         this.hasFile = false;
@@ -107,7 +119,9 @@ export default class EgoForm implements EgoFormInterface {
         this.currentStepOptional = false;
         this.disbleStepsTransition = disbleStepsTransition ?? false;
         this.stepChanging = false;
+        this.preventValidation = preventValidation ?? false;
         this.preventSubmit = preventSubmit ?? false;
+        this.preventSubmission = preventSubmission ?? false;
         this.debug = debug ?? false;
 
         this.declareHandlers();
@@ -117,10 +131,25 @@ export default class EgoForm implements EgoFormInterface {
     }
 
     submit() {
-        if (!this.preventSubmit) this.resumeSubmit();
+        if (typeof this.onBeforeValidation == 'function') this.onBeforeValidation(this);
+        // For backward compatibility 1.8
+        if (!this.onBeforeValidation && typeof this.onBeforeSubmit == 'function') {
+            if (this.debug) showLog('WARNING: onBeforeSubmit will be deprecated in future versions, use onBeforeValidation or onBeforeSubmission instead.');
+            this.onBeforeSubmit(this);
+        }
+        // For backward compatibility 1.8
+        if (!this.preventValidation && !this.preventSubmit) {
+            if (this.debug) showLog('WARNING: preventSubmit will be deprecated in future versions, use preventValidation or preventSubmission instead.');
+            this.resumeValidation();
+        }
+        // For backward compatibility 1.8
     }
 
-    resumeSubmit() {
+    // For backward compatibility 1.8
+    resumeSubmit() { this.resumeValidation(); }
+    // For backward compatibility 1.8
+
+    resumeValidation() {
         if (this.debug) showLog(`submitting using ${this.submitType}!`);
 
         this.submittingForm({ submitting: true });
@@ -137,7 +166,6 @@ export default class EgoForm implements EgoFormInterface {
             }
         });
 
-
         if (!this.isValid) {
             this.submittingForm({ submitting: false, force: true });
 
@@ -152,44 +180,49 @@ export default class EgoForm implements EgoFormInterface {
             }
         }
         else {
-            if (this.debug) {
-                showLog(`the form was submitted!`);
-                showLog(JSON.parse(this.serializeData({ returnFormData: false }) as string), 'data');
-                setTimeout(() => {
-                    this.submittingForm({ submitting: false, force: true });
-                }, 1000);
+            if (typeof this.onBeforeSubmission == 'function') this.onBeforeSubmission(this);
+            if (!this.preventSubmission) this.resumeSubmission();
+        }
+    }
+
+    resumeSubmission() {
+        if (this.debug) {
+            showLog(`the form was submitted!`);
+            showLog(JSON.parse(this.serializeData({ returnFormData: false }) as string), 'data');
+            setTimeout(() => {
+                this.submittingForm({ submitting: false, force: true });
+            }, 1000);
+        }
+        else {
+            if (this.submitType == 'fetch' && this.actionUrl) {
+                const body: BodyInit | FormData = this.serializeData({ returnFormData: this.submitDataFormat === 'formData' });
+
+                fetch(this.actionUrl, {
+                    method: this.submitMethod,
+                    headers: { ...this.requestHeaders },
+                    body: body,
+                })
+                    .then((resp) => {
+                        if (resp.status === 200 || resp.status === 201) {
+                            if (this.resetOnSuccess) this.reset();
+                            if (typeof this.onSuccess == 'function') this.onSuccess(resp);
+                        }
+                        else {
+                            if (typeof this.onError == 'function') this.onError(resp);
+                        }
+                    })
+                    .catch((err) => {
+                        if (typeof this.onError == 'function') this.onError(err);
+                    })
+                    .finally(() => {
+                        this.submittingForm({ submitting: false });
+                    });
+            }
+            else if (this.submitType == 'fetch' && !this.actionUrl) {
+                throw new Error(`Missing submit URL: When using 'fetch' submitType, specify either the form's 'action' or the 'submitUrl' option.`);
             }
             else {
-                if (this.submitType == 'fetch' && this.actionUrl) {
-                    const body: BodyInit | FormData = this.serializeData({ returnFormData: this.submitDataFormat === 'formData' });
-
-                    fetch(this.actionUrl, {
-                        method: this.submitMethod,
-                        headers: { ...this.requestHeaders },
-                        body: body,
-                    })
-                        .then((resp) => {
-                            if (resp.status === 200 || resp.status === 201) {
-                                if (this.resetOnSuccess) this.reset();
-                                if (typeof this.onSuccess == 'function') this.onSuccess(resp);
-                            }
-                            else {
-                                if (typeof this.onError == 'function') this.onError(resp);
-                            }
-                        })
-                        .catch((err) => {
-                            if (typeof this.onError == 'function') this.onError(err);
-                        })
-                        .finally(() => {
-                            this.submittingForm({ submitting: false });
-                        });
-                }
-                else if (this.submitType == 'fetch' && !this.actionUrl) {
-                    throw new Error(`Missing submit URL: When using 'fetch' submitType, specify either the form's 'action' or the 'submitUrl' option.`);
-                }
-                else {
-                    this.form.submit();
-                }
+                this.form.submit();
             }
         }
     }
@@ -420,7 +453,6 @@ export default class EgoForm implements EgoFormInterface {
             if (!isRefresh) {
                 this.submitBtn.addEventListener('click', function (e: Event) {
                     e.preventDefault();
-                    if (typeof self.onBeforeSubmit == 'function') self.onBeforeSubmit(self);
                     self.submit();
                 });
             }

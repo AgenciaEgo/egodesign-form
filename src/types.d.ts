@@ -43,13 +43,17 @@ interface EgoFormOptions {
     onSubmitEnd?: Function;
     onSuccess?: Function;
     onError?: Function;
-    onBeforeSubmit?: Function;
+    onBeforeValidation?: Function;
+    onBeforeSubmit?: Function; // For backward compatibility 1.8
+    onBeforeSubmission?: Function;
     disbleStepsTransition?: boolean;
     resetOnSuccess?: boolean;
     resetLoaderOnSuccess?: boolean;
     scrollOnError?: boolean;
     scrollOnErrorOffset?: number;
-    preventSubmit?: boolean;
+    preventValidation?: boolean;
+    preventSubmit?: boolean; // For backward compatibility 1.8
+    preventSubmission?: boolean;
     debug?: boolean;
 }
 
@@ -72,7 +76,9 @@ interface EgoFormInterface {
     onSubmitEnd: Function | null;
     onSuccess: Function | null;
     onError: Function | null;
-    onBeforeSubmit: Function | null;
+    onBeforeValidation: Function | null;
+    onBeforeSubmit: Function | null; // For backward compatibility 1.8
+    onBeforeSubmission: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     stepChanging: boolean;
@@ -83,7 +89,9 @@ interface EgoFormInterface {
     resetLoaderOnSuccess: boolean;
     scrollOnError: boolean;
     scrollOnErrorOffset: number | null;
-    preventSubmit: boolean;
+    preventValidation: boolean;
+    preventSubmit: boolean; // For backward compatibility 1.8
+    preventSubmission: boolean;
     debug: boolean;
 }
 

@@ -153,7 +153,7 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             for (const customType of customTypes) {
                 if (type === customType) {
                     for (const validation of this.customValidations[type]) {
-                        if (control && !validation.condition(control.value)) {
+                        if (control && !validation.condition(control.value, controlName)) {
                             if (errorElement) errorElement.textContent = validation.message || '';
                             this.displayFieldError({ control, field, errorElement });
                             return false;
