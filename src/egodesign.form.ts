@@ -320,7 +320,9 @@ export default class EgoForm implements EgoFormInterface {
 
                 // Validate each required field
                 if (requiredFields && (step === 'next' || step === 'optional')) {
-                    requiredFields.forEach(field => this.isValid = this.validator.validateField({ field }));
+                    requiredFields.forEach(field => {
+                        if (!this.validator.validateField({ field })) this.isValid = false;
+                    });
                 }
 
                 if (currentElement && nextElement && this.isValid) {
