@@ -1,3 +1,45 @@
+/**
+ * EgoForm - A comprehensive form handling library with validation, multi-step support, and submission management
+ *
+ * @class EgoForm
+ * @description Provides advanced form functionality including validation, multi-step navigation,
+ * file handling, and customizable submission with support for various data formats and HTTP methods.
+ *
+ * @example
+ * ```javascript
+ * const form = new EgoForm({
+ *   element: document.querySelector('#myForm'),
+ *   submitType: 'fetch',
+ *   submitDataFormat: 'json',
+ *   submitUrl: '/api/submit',
+ *   onSuccess: (response) => console.log('Success:', response),
+ *   onError: (error) => console.error('Error:', error)
+ * });
+ * ```
+ *
+ * @example Multi-step form with validation
+ * ```javascript
+ * const stepForm = new EgoForm({
+ *   element: document.querySelector('#stepForm'),
+ *   classes: {
+ *     requiredField: 'required',
+ *     fieldHasError: 'error',
+ *     formSubmittingState: 'submitting'
+ *   },
+ *   customValidations: {
+ *     email: [{
+ *       name: 'custom-email',
+ *       condition: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+ *       message: 'Please enter a valid email address'
+ *     }]
+ *   },
+ *   onStepChange: (from, to) => console.log(`Step changed from ${from} to ${to}`),
+ *   onValidationError: (fields) => console.log('Validation errors:', fields)
+ * });
+ * ```
+ *
+ * @param {EgoFormOptions} options - Configuration options for the form
+ */
 export default class EgoForm implements EgoFormInterface {
     form: HTMLFormElement;
     submitBtn: HTMLButtonElement | null;
