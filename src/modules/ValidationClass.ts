@@ -31,6 +31,8 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             customTypes: string[] = Object.keys(this.customValidations),
             minLength: number | null = field.dataset.minLength ? Number(field.dataset.minLength) : null,
             maxLength: number | null = field.dataset.maxLength ? Number(field.dataset.maxLength) : null;
+        console.log(controlName, type);
+
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');

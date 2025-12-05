@@ -348,6 +348,7 @@ export default class EgoForm implements EgoFormInterface {
             const current: string = this.currentStepOptional ? this.currentStep.toString() + 'b' : this.currentStep.toString(),
                 currentElement: HTMLElement | null = this.form.querySelector('[data-step="' + current + '"]'),
                 requiredFields: NodeListOf<HTMLElement> | undefined = currentElement?.querySelectorAll(`.${this.classes.requiredField}`),
+                requiredIfFilledFields: NodeListOf<HTMLElement> | undefined = currentElement?.querySelectorAll(`.${this.classes.requiredIfFilledField}`),
                 nextStepNumber: number | string = step === 'next' ?
                     this.currentStep + 1
                     : step === 'prev' && !this.currentStepOptional ?
@@ -363,14 +364,23 @@ export default class EgoForm implements EgoFormInterface {
                 const invalidFields: string[] = [];
 
                 // Validate each required field
-                if (requiredFields && (step === 'next' || step === 'optional')) {
-                    requiredFields.forEach(field => {
+                if ((requiredFields || requiredIfFilledFields) && (step === 'next' || step === 'optional')) {
+                    requiredFields?.forEach(field => {
                         if (!this.validator.validateField({ field })) {
                             this.isValid = false;
-                            const control = field.querySelector('.form__control');
+                            const control: EgoFormControl | null = field.querySelector('.form__control');
                             invalidFields.push(control?.getAttribute('name') as string);
                         }
                     });
+                    requiredIfFilledFields?.forEach(field => {
+                        const control: EgoFormControl | null = field.querySelector('.form__control');
+                        if (control?.value) {
+                            if (!this.validator.validateField({ field })) {
+                                this.isValid = false;
+                                invalidFields.push(control?.getAttribute('name') as string);
+                            }
+                        }
+                    })
                 }
                 if (!this.isValid) {
                     this.stepChanging = false;
