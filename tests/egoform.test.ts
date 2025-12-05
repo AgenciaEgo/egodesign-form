@@ -63,20 +63,20 @@ describe('EgoForm', () => {
         expect(submitSpy).toHaveBeenCalled();
     });
 
-    it('should validate fields on submit', () => {
+    it('should validate fields on submit', async () => {
         const validateFieldSpy = vi.spyOn(formInstance.validator, 'validateField');
         submitButton.click();
-        expect(validateFieldSpy).toHaveBeenCalledTimes(3);
+        await vi.waitFor(() => expect(validateFieldSpy).toHaveBeenCalledTimes(3));
     });
 
-    it('should set isValid to false if validation fails', () => {
+    it('should set isValid to false if validation fails', async () => {
         submitButton.click();
-        expect(formInstance.isValid).toBe(false);
+        await vi.waitFor(() => expect(formInstance.isValid).toBe(false));
     });
 
-    it('should call onValidationError if validation fails', () => {
+    it('should call onValidationError if validation fails', async () => {
         submitButton.click();
-        expect(formInstance.onValidationError).toHaveBeenCalled();
+        await vi.waitFor(() => expect(formInstance.onValidationError).toHaveBeenCalled());
     });
 
     describe('Specific Test Group', () => {

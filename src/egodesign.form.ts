@@ -428,15 +428,15 @@ export default class EgoForm implements EgoFormInterface {
     }
 
     nextStep() {
-        this.changeStep({ step: 'next' });
+        return this.changeStep({ step: 'next' });
     }
 
     optionalStep() {
-        this.changeStep({ step: 'optional' });
+        return this.changeStep({ step: 'optional' });
     }
 
     prevStep() {
-        this.changeStep({ step: 'prev' });
+        return this.changeStep({ step: 'prev' });
     }
 
     isControlFilled({ control }: { control: EgoFormControl }) {

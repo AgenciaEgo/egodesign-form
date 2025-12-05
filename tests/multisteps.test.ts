@@ -62,78 +62,78 @@ describe('EgoForm Multistep Functionality', () => {
     it('should move to the next step when nextStep is called', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon Doe';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         expect(formInstance.currentStep).toBe(2);
     });
 
-    it('should move to the previous step when prevStep is called', () => {
+    it('should move to the previous step when prevStep is called', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon Doe';
-        formInstance.nextStep();
-        formInstance.prevStep();
+        await formInstance.nextStep();
+        await formInstance.prevStep();
         expect(formInstance.currentStep).toBe(1);
     });
 
-    it('should move to the optional step when optionalStep is called', () => {
+    it('should move to the optional step when optionalStep is called', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         const lastnameField = document.querySelector('.form__control[name="lastname"]') as HTMLInputElement;
         lastnameField.value = 'Doe';
-        formInstance.optionalStep();
+        await formInstance.optionalStep();
         expect(formInstance.currentStep).toBe(2);
         expect(formInstance.currentStepOptional).toBe(true);
     });
 
-    it('should prevent step change if validation fails', () => {
-        formInstance.nextStep();
+    it('should prevent step change if validation fails', async () => {
+        await formInstance.nextStep();
         expect(formInstance.currentStep).toBe(1);
     });
 
-    it('should trigger onStepChange callback when step changes', () => {
+    it('should trigger onStepChange callback when step changes', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         expect(formInstance.onStepChange).toHaveBeenCalled();
     });
 
-    it('should correctly handle optional steps', () => {
+    it('should correctly handle optional steps', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         const lastnameField = document.querySelector('.form__control[name="lastname"]') as HTMLInputElement;
         lastnameField.value = 'Doe';
-        formInstance.optionalStep();
+        await formInstance.optionalStep();
         expect(formInstance.currentStep).toBe(2);
         expect(formInstance.currentStepOptional).toBe(true);
-        formInstance.nextStep();
+        await formInstance.nextStep();
         expect(formInstance.currentStep).toBe(3);
     });
 
-    it('should avoid optional steps if ignored', () => {
+    it('should avoid optional steps if ignored', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         const lastnameField = document.querySelector('.form__control[name="lastname"]') as HTMLInputElement;
         lastnameField.value = 'Doe';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         expect(formInstance.currentStep).toBe(3);
     });
 
-    it('should prevent multiple step changes at the same time', () => {
+    it('should prevent multiple step changes at the same time', async () => {
         formInstance.stepChanging = true;
-        formInstance.nextStep();
+        await formInstance.nextStep();
         expect(formInstance.currentStep).toBe(1);
     });
 
-    it('should handle prevStep correctly when in an optional step', () => {
+    it('should handle prevStep correctly when in an optional step', async () => {
         const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
         nameField.value = 'Jhon';
-        formInstance.nextStep();
+        await formInstance.nextStep();
         const lastnameField = document.querySelector('.form__control[name="lastname"]') as HTMLInputElement;
         lastnameField.value = 'Doe';
-        formInstance.optionalStep();
-        formInstance.prevStep();
+        await formInstance.optionalStep();
+        await formInstance.prevStep();
         expect(formInstance.currentStep).toBe(2);
         expect(formInstance.currentStepOptional).toBe(false);
     });
