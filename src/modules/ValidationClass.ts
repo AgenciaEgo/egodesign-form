@@ -19,7 +19,7 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
         this.debug = debug;
     }
 
-    validateField({ field }: { field: EgoFormControl }): boolean {
+    async validateField({ field }: { field: EgoFormControl }): Promise<boolean> {
         const type: string = field.dataset.type || '',
             isMultipleChoice: boolean = ['radio', 'checkbox'].includes(type),
             isRequired: boolean = field.classList.contains(this.classes.requiredField),
@@ -31,8 +31,6 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             customTypes: string[] = Object.keys(this.customValidations),
             minLength: number | null = field.dataset.minLength ? Number(field.dataset.minLength) : null,
             maxLength: number | null = field.dataset.maxLength ? Number(field.dataset.maxLength) : null;
-        console.log(controlName, type);
-
 
         if (!control) this.throwError('control not found.');
         if (!controlName) this.throwError('control name not found.');
@@ -155,10 +153,13 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             for (const customType of customTypes) {
                 if (type === customType) {
                     for (const validation of this.customValidations[type]) {
-                        if (control && !validation.condition(control.value, controlName)) {
-                            if (errorElement) errorElement.textContent = validation.message || '';
-                            this.displayFieldError({ control, field, errorElement });
-                            return false;
+                        if (control) {
+                            const result = await validation.condition(control.value, controlName);
+                            if (!result) {
+                                if (errorElement) errorElement.textContent = validation.message || '';
+                                this.displayFieldError({ control, field, errorElement });
+                                return false;
+                            }
                         }
                     }
                 }

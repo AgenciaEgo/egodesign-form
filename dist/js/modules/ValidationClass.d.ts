@@ -6,7 +6,7 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
     constructor({ customValidations, classes, customValidationMessages, debug }: EgoFormValidatorOptions);
     validateField({ field }: {
         field: EgoFormControl;
-    }): boolean;
+    }): Promise<boolean>;
     isValidEmail({ email }: {
         email: string;
     }): boolean;

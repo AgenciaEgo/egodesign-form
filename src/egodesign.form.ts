@@ -191,7 +191,7 @@ export default class EgoForm implements EgoFormInterface {
     resumeSubmit() { this.resumeValidation(); }
     // For backward compatibility 1.8
 
-    resumeValidation() {
+    async resumeValidation() {
         if (this.debug) showLog(`submitting using ${this.submitType}!`);
 
         this.submittingForm({ submitting: true });
@@ -199,14 +199,16 @@ export default class EgoForm implements EgoFormInterface {
         // Validate each required field
         this.isValid = true;
         const invalidFields: string[] = [];
-        this.form.querySelectorAll(`.form__field`).forEach(field => {
-            const fieldValid: boolean = this.validator.validateField({ field });
+        const fields = Array.from(this.form.querySelectorAll(`.form__field`));
+
+        for (const field of fields) {
+            const fieldValid: boolean = await this.validator.validateField({ field });
             if (!fieldValid) {
                 const thisControl: EgoFormControl | null = field.querySelector('.form__control');
                 if (thisControl) invalidFields.push(thisControl.name);
                 this.isValid = false;
             }
-        });
+        }
 
         if (!this.isValid) {
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
@@ -343,7 +345,7 @@ export default class EgoForm implements EgoFormInterface {
         if (this.currentStep) this.changeStep({ step: 1 });
     }
 
-    changeStep({ step }: { step: 'next' | 'prev' | 'optional' | number }) {
+    async changeStep({ step }: { step: 'next' | 'prev' | 'optional' | number }) {
         if (!this.stepChanging) {
             const current: string = this.currentStepOptional ? this.currentStep.toString() + 'b' : this.currentStep.toString(),
                 currentElement: HTMLElement | null = this.form.querySelector('[data-step="' + current + '"]'),
@@ -365,22 +367,26 @@ export default class EgoForm implements EgoFormInterface {
 
                 // Validate each required field
                 if ((requiredFields || requiredIfFilledFields) && (step === 'next' || step === 'optional')) {
-                    requiredFields?.forEach(field => {
-                        if (!this.validator.validateField({ field })) {
-                            this.isValid = false;
-                            const control: EgoFormControl | null = field.querySelector('.form__control');
-                            invalidFields.push(control?.getAttribute('name') as string);
-                        }
-                    });
-                    requiredIfFilledFields?.forEach(field => {
-                        const control: EgoFormControl | null = field.querySelector('.form__control');
-                        if (control?.value) {
-                            if (!this.validator.validateField({ field })) {
+                    if (requiredFields) {
+                        for (const field of Array.from(requiredFields)) {
+                            if (!(await this.validator.validateField({ field }))) {
                                 this.isValid = false;
+                                const control: EgoFormControl | null = field.querySelector('.form__control');
                                 invalidFields.push(control?.getAttribute('name') as string);
                             }
                         }
-                    })
+                    }
+                    if (requiredIfFilledFields) {
+                        for (const field of Array.from(requiredIfFilledFields)) {
+                            const control: EgoFormControl | null = field.querySelector('.form__control');
+                            if (control?.value) {
+                                if (!(await this.validator.validateField({ field }))) {
+                                    this.isValid = false;
+                                    invalidFields.push(control?.getAttribute('name') as string);
+                                }
+                            }
+                        }
+                    }
                 }
                 if (!this.isValid) {
                     this.stepChanging = false;
@@ -528,8 +534,8 @@ export default class EgoForm implements EgoFormInterface {
         // OnBlur validation
         this.form.querySelectorAll<HTMLElement>(`.form__field.${this.classes.validateOnBlur}`)
             .forEach(field => {
-                field.querySelector('.form__control')?.addEventListener('blur', () => {
-                    const fieldValid: boolean = this.validator.validateField({ field });
+                field.querySelector('.form__control')?.addEventListener('blur', async () => {
+                    const fieldValid: boolean = await this.validator.validateField({ field });
                     if (!fieldValid) this.isValid = false;
                 });
             });
@@ -538,8 +544,8 @@ export default class EgoForm implements EgoFormInterface {
         this.form.querySelectorAll<HTMLElement>(`.form__field.${this.classes.validateOnInput}`)
             .forEach(field => {
                 const control: EgoFormControl | null = field.querySelector('.form__control');
-                const eventFunction = () => {
-                    const fieldValid: boolean = this.validator.validateField({ field });
+                const eventFunction = async () => {
+                    const fieldValid: boolean = await this.validator.validateField({ field });
                     if (fieldValid) this.validator.clearControlError({ control });
                 }
                 control?.addEventListener('input', eventFunction);

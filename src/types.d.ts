@@ -21,7 +21,7 @@ type EgoFormValidationMessages = Record<string, Record<string, string>>;
 
 interface EgoFormCustomValidation {
     name: string;
-    condition: Function;
+    condition: (value: string, controlName: string | null) => boolean | Promise<boolean>;
     message: string;
 }
 

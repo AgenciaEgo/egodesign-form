@@ -82,7 +82,7 @@ export default class EgoForm implements EgoFormInterface {
     constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeValidation, onBeforeSubmit, onBeforeSubmission, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventValidation, preventSubmit, preventSubmission, disbleStepsTransition, debug }: EgoFormOptions);
     submit(): void;
     resumeSubmit(): void;
-    resumeValidation(): void;
+    resumeValidation(): Promise<void>;
     resumeSubmission(): void;
     submittingForm({ submitting, force }: {
         submitting: boolean;
@@ -94,7 +94,7 @@ export default class EgoForm implements EgoFormInterface {
     reset(): void;
     changeStep({ step }: {
         step: 'next' | 'prev' | 'optional' | number;
-    }): void;
+    }): Promise<void>;
     nextStep(): void;
     optionalStep(): void;
     prevStep(): void;
