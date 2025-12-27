@@ -37,6 +37,11 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
 
         if (this.debug) showLog(`validating field "${controlName}"`);
 
+        // If field is required-if-filled and empty, skip validation
+        if (isRequiredIfFilled && !isRequired && !control?.value) {
+            return true;
+        }
+
         if (isRequired && !control?.value) {
             if (errorElement && this.validationMessages && controlName) {
                 errorElement.textContent = this.validationMessages[controlName] ?

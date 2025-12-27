@@ -69,6 +69,7 @@ export default class EgoForm implements EgoFormInterface {
     onBeforeSubmission: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
+    highestVisitedStep: number;
     stepChanging: boolean;
     disbleStepsTransition: boolean;
     isValid: boolean;
@@ -158,6 +159,7 @@ export default class EgoForm implements EgoFormInterface {
         this.scrollOnErrorOffset = scrollOnErrorOffset || 0;
         const currentStepElement: HTMLElement | null = this.form.querySelector('.form__step.--active')
         this.currentStep = currentStepElement ? Number(currentStepElement.dataset.step) : 0;
+        this.highestVisitedStep = this.currentStep;
         this.currentStepOptional = false;
         this.disbleStepsTransition = disbleStepsTransition ?? false;
         this.stepChanging = false;
@@ -199,9 +201,29 @@ export default class EgoForm implements EgoFormInterface {
         // Validate each required field
         this.isValid = true;
         const invalidFields: string[] = [];
-        const fields = Array.from(this.form.querySelectorAll(`.form__field`));
 
-        for (const field of fields) {
+        // If multi-step form, only validate fields up to the highest visited step
+        let fieldsToValidate: HTMLElement[];
+        if (this.currentStep > 0 && this.highestVisitedStep > 0) {
+            fieldsToValidate = [];
+            for (let step = 1; step <= this.highestVisitedStep; step++) {
+                const stepElement = this.form.querySelector(`.form__step[data-step="${step}"]`);
+                if (stepElement) {
+                    const stepFields = Array.from(stepElement.querySelectorAll<HTMLElement>(`.form__field`));
+                    fieldsToValidate.push(...stepFields);
+                }
+                // Also check for optional step (e.g., "2b")
+                const optionalStepElement = this.form.querySelector(`.form__step[data-step="${step}b"]`);
+                if (optionalStepElement && optionalStepElement.classList.contains('--active')) {
+                    const optionalStepFields = Array.from(optionalStepElement.querySelectorAll<HTMLElement>(`.form__field`));
+                    fieldsToValidate.push(...optionalStepFields);
+                }
+            }
+        } else {
+            fieldsToValidate = Array.from(this.form.querySelectorAll<HTMLElement>(`.form__field`));
+        }
+
+        for (const field of fieldsToValidate) {
             const fieldValid: boolean = await this.validator.validateField({ field });
             if (!fieldValid) {
                 const thisControl: EgoFormControl | null = field.querySelector('.form__control');
@@ -342,7 +364,10 @@ export default class EgoForm implements EgoFormInterface {
         this.form.querySelectorAll('.form__control').forEach(field =>
             field.setAttribute('aria-invalid', 'false')
         );
-        if (this.currentStep) this.changeStep({ step: 1 });
+        if (this.currentStep) {
+            this.highestVisitedStep = 1;
+            this.changeStep({ step: 1 });
+        }
     }
 
     async changeStep({ step }: { step: 'next' | 'prev' | 'optional' | number }) {
@@ -357,7 +382,9 @@ export default class EgoForm implements EgoFormInterface {
                         this.currentStep - 1
                         : step === 'optional' ?
                             this.currentStep + 'b'
-                            : this.currentStep,
+                            : typeof step === 'number' ?
+                                step
+                                : this.currentStep,
                 nextElement: HTMLElement | null = this.form.querySelector('[data-step="' + nextStepNumber + '"]');
 
             if (this.currentStep !== nextStepNumber || this.currentStepOptional) {
@@ -398,6 +425,12 @@ export default class EgoForm implements EgoFormInterface {
                         this.stepChanging = false;
                         this.currentStepOptional = step === 'optional';
                         this.currentStep = parseInt(nextStepNumber as string);
+
+                        // Update highest visited step when moving forward
+                        if ((step === 'next' || step === 'optional') && this.currentStep > this.highestVisitedStep) {
+                            this.highestVisitedStep = this.currentStep;
+                        }
+
                         if (typeof this.onStepChange == 'function') this.onStepChange(current.toString(), nextStepNumber.toString());
                     }
 

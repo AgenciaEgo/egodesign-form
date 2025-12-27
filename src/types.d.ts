@@ -81,6 +81,7 @@ interface EgoFormInterface {
     onBeforeSubmission: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
+    highestVisitedStep: number;
     stepChanging: boolean;
     disbleStepsTransition?: boolean;
     isValid: boolean;
