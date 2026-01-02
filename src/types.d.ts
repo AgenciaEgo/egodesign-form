@@ -46,6 +46,7 @@ interface EgoFormOptions {
     onBeforeValidation?: Function;
     onBeforeSubmit?: Function; // For backward compatibility 1.8
     onBeforeSubmission?: Function;
+    onValidityChange?: Function;
     disbleStepsTransition?: boolean;
     resetOnSuccess?: boolean;
     resetLoaderOnSuccess?: boolean;
@@ -79,6 +80,7 @@ interface EgoFormInterface {
     onBeforeValidation: Function | null;
     onBeforeSubmit: Function | null; // For backward compatibility 1.8
     onBeforeSubmission: Function | null;
+    onValidityChange: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;

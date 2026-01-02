@@ -79,6 +79,7 @@ const myForm = new EgoForm({
     onStepChange: (previous, next) => console.log(current, next),
     onBeforeValidation: instance => instance.resumeValidation(),
     onValidationError: fields => console.log(fields),
+    onValidityChange: (isValid, formInstance)) => console.log(isValid),
     onSubmitStart: () => console.log('Submit start'),
     onBeforeSubmission: instance => instance.resumeSubmission(),
     onSubmitEnd: () => console.log('Submit end'),
@@ -138,6 +139,7 @@ const myForm: EgoForm = new EgoForm({
     onStepChange: (prev: string, next: string) => console.log(prev, next),
     onBeforeValidation: (instance: EgoForm) => instance.resumeValidation(),
     onValidationError: (fields: string[], instance: EgoForm) => console.log(instance, fields),
+    onValidityChange: (isValid: boolean, instance: EgoForm)) => console.log(isValid),
     onSubmitStart: () => console.log('Submit start'),
     onBeforeSubmission: (instance: EgoForm) => instance.resumeSubmission(),
     onSubmitEnd: () => console.log('Submit end'),
@@ -249,6 +251,7 @@ const myForm: EgoForm = new EgoForm({
 | --- | ----------- | ----------- |
 | *onStepChange* | Event triggered every time there's a step change. Only available for stepped forms. It returns the previous and the next steps. | An anonymous function or `null`.
 | *onValidationError* | Event triggered when there's any validation error. The callback function receives an array containing the names of invalid fields and a reference to the instance itself. | An anonymous function or `null`.
+| *onValidityChange* | Event triggered when the validity of the form changes. | An anonymous function or `null`.
 | *onBeforeValidation* | Event triggered before the validation starts. The callback function receives a reference to the instance itself | An anonymous function or `null`.
 | *onSubmitStart* | Event triggered when the submit starts. | An anonymous function or `null`.
 | *onBeforeSubmission* | Event triggered before the submission starts, right after successful validation. The callback function receives a reference to the instance itself | An anonymous function or `null`.

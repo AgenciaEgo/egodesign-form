@@ -65,6 +65,7 @@ export default class EgoForm implements EgoFormInterface {
     onBeforeValidation: Function | null;
     onBeforeSubmit: Function | null;
     onBeforeSubmission: Function | null;
+    onValidityChange: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;
@@ -80,7 +81,9 @@ export default class EgoForm implements EgoFormInterface {
     preventSubmit: boolean;
     preventSubmission: boolean;
     debug: boolean;
-    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeValidation, onBeforeSubmit, onBeforeSubmission, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventValidation, preventSubmit, preventSubmission, disbleStepsTransition, debug }: EgoFormOptions);
+    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeValidation, onBeforeSubmit, onBeforeSubmission, onValidityChange, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventValidation, preventSubmit, preventSubmission, disbleStepsTransition, debug }: EgoFormOptions);
+    checkForRequiredFields(): boolean;
+    setValidity(isValid: boolean): void;
     submit(): void;
     resumeSubmit(): void;
     resumeValidation(): Promise<void>;

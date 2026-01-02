@@ -53,7 +53,7 @@ describe('EgoForm', () => {
         expect(formInstance.submitBtn).toBe(submitButton);
         expect(formInstance.actionUrl).toBe('/submit');
         expect(formInstance.submitMethod).toBe('POST');
-        expect(formInstance.isValid).toBe(true);
+        expect(formInstance.isValid).toBe(false); // false because form has required fields that are empty
         expect(formInstance.currentStep).toBe(0);
     });
 

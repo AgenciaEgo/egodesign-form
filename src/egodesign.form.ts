@@ -67,6 +67,7 @@ export default class EgoForm implements EgoFormInterface {
     onBeforeSubmit: Function | null;
     // For backward compatibility 1.8
     onBeforeSubmission: Function | null;
+    onValidityChange: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;
@@ -104,6 +105,7 @@ export default class EgoForm implements EgoFormInterface {
         onBeforeValidation,
         onBeforeSubmit,
         onBeforeSubmission,
+        onValidityChange,
         resetOnSuccess,
         resetLoaderOnSuccess,
         scrollOnError,
@@ -149,6 +151,7 @@ export default class EgoForm implements EgoFormInterface {
         this.onBeforeValidation = onBeforeValidation ?? null;
         this.onBeforeSubmit = onBeforeSubmit ?? null;
         this.onBeforeSubmission = onBeforeSubmission ?? null;
+        this.onValidityChange = onValidityChange ?? null;
         this.fieldGroups = fieldGroups ?? null;
         this.extraFields = extraFields ?? [];
         this.hasFile = false;
@@ -171,7 +174,23 @@ export default class EgoForm implements EgoFormInterface {
         this.declareHandlers();
         if (!this.actionUrl || this.actionUrl === '') throw new Error("The form doesn't have an action attribute or submitUrl wasn't provided.");
 
+        if (this.checkForRequiredFields()) this.isValid = false;
+
         if (this.debug) showLog('initialized!');
+    }
+
+    checkForRequiredFields() {
+        const requiredFields = this.form.querySelectorAll(`.${this.classes.requiredField}`);
+        return requiredFields.length > 0;
+    }
+
+    setValidity(isValid: boolean) {
+        if (this.isValid !== isValid) {
+            this.isValid = isValid;
+            if (typeof this.onValidityChange === 'function') {
+                this.onValidityChange(isValid, this);
+            }
+        }
     }
 
     submit() {
@@ -199,7 +218,7 @@ export default class EgoForm implements EgoFormInterface {
         this.submittingForm({ submitting: true });
 
         // Validate each required field
-        this.isValid = true;
+        let isValid = true;
         const invalidFields: string[] = [];
 
         // If multi-step form, only validate fields up to the highest visited step
@@ -228,9 +247,11 @@ export default class EgoForm implements EgoFormInterface {
             if (!fieldValid) {
                 const thisControl: EgoFormControl | null = field.querySelector('.form__control');
                 if (thisControl) invalidFields.push(thisControl.name);
-                this.isValid = false;
+                isValid = false;
             }
         }
+
+        this.setValidity(isValid);
 
         if (!this.isValid) {
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
@@ -389,7 +410,7 @@ export default class EgoForm implements EgoFormInterface {
 
             if (this.currentStep !== nextStepNumber || this.currentStepOptional) {
                 this.stepChanging = true;
-                this.isValid = true;
+                let isValid = true;
                 const invalidFields: string[] = [];
 
                 // Validate each required field
@@ -397,7 +418,7 @@ export default class EgoForm implements EgoFormInterface {
                     if (requiredFields) {
                         for (const field of Array.from(requiredFields)) {
                             if (!(await this.validator.validateField({ field }))) {
-                                this.isValid = false;
+                                isValid = false;
                                 const control: EgoFormControl | null = field.querySelector('.form__control');
                                 invalidFields.push(control?.getAttribute('name') as string);
                             }
@@ -408,13 +429,16 @@ export default class EgoForm implements EgoFormInterface {
                             const control: EgoFormControl | null = field.querySelector('.form__control');
                             if (control?.value) {
                                 if (!(await this.validator.validateField({ field }))) {
-                                    this.isValid = false;
+                                    isValid = false;
                                     invalidFields.push(control?.getAttribute('name') as string);
                                 }
                             }
                         }
                     }
                 }
+
+                this.setValidity(isValid);
+
                 if (!this.isValid) {
                     this.stepChanging = false;
                     if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
@@ -569,7 +593,7 @@ export default class EgoForm implements EgoFormInterface {
             .forEach(field => {
                 field.querySelector('.form__control')?.addEventListener('blur', async () => {
                     const fieldValid: boolean = await this.validator.validateField({ field });
-                    if (!fieldValid) this.isValid = false;
+                    if (!fieldValid) this.setValidity(false);
                 });
             });
 
