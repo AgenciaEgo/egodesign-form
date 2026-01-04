@@ -19,7 +19,7 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
         this.debug = debug;
     }
 
-    async validateField({ field }: { field: EgoFormControl }): Promise<boolean> {
+    async validateField({ field, silent = false }: { field: EgoFormControl, silent?: boolean }): Promise<boolean> {
         const type: string = field.dataset.type || '',
             isMultipleChoice: boolean = ['radio', 'checkbox'].includes(type),
             isRequired: boolean = field.classList.contains(this.classes.requiredField),
@@ -43,32 +43,38 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
         }
 
         if (isRequired && !control?.value) {
-            if (errorElement && this.validationMessages && controlName) {
-                errorElement.textContent = this.validationMessages[controlName] ?
-                    this.validationMessages[controlName].empty
-                    :
-                    this.validationMessages.default.empty;
+            if (!silent) {
+                if (errorElement && this.validationMessages && controlName) {
+                    errorElement.textContent = this.validationMessages[controlName] ?
+                        this.validationMessages[controlName].empty
+                        :
+                        this.validationMessages.default.empty;
+                }
+                this.displayFieldError({ control, field, errorElement });
             }
-            this.displayFieldError({ control, field, errorElement });
             return false;
         }
 
         if (control?.value) {
             if (minLength) {
                 if (control.value.length < minLength) {
-                    if (errorElement && this.validationMessages) {
-                        errorElement.textContent = this.validationMessages.default.minLength.replace('[[var]]', minLength.toString());
+                    if (!silent) {
+                        if (errorElement && this.validationMessages) {
+                            errorElement.textContent = this.validationMessages.default.minLength.replace('[[var]]', minLength.toString());
+                        }
+                        this.displayFieldError({ control, field, errorElement });
                     }
-                    this.displayFieldError({ control, field, errorElement });
                     return false;
                 }
             }
             if (maxLength) {
                 if (control.value.length > maxLength) {
-                    if (errorElement && this.validationMessages) {
-                        errorElement.textContent = this.validationMessages.default.maxLength.replace('[[var]]', maxLength.toString());
+                    if (!silent) {
+                        if (errorElement && this.validationMessages) {
+                            errorElement.textContent = this.validationMessages.default.maxLength.replace('[[var]]', maxLength.toString());
+                        }
+                        this.displayFieldError({ control, field, errorElement });
                     }
-                    this.displayFieldError({ control, field, errorElement });
                     return false;
                 }
             }
@@ -76,12 +82,14 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
 
         if ((isMultipleChoice && !controlCheked)) {
             if (!isRequiredIfFilled) {
-                this.displayFieldError({ control, field, errorElement });
-                if (errorElement && this.validationMessages && controlName) {
-                    errorElement.textContent = this.validationMessages[controlName] ?
-                        this.validationMessages[controlName].empty
-                        :
-                        this.validationMessages.default.empty;
+                if (!silent) {
+                    this.displayFieldError({ control, field, errorElement });
+                    if (errorElement && this.validationMessages && controlName) {
+                        errorElement.textContent = this.validationMessages[controlName] ?
+                            this.validationMessages[controlName].empty
+                            :
+                            this.validationMessages.default.empty;
+                    }
                 }
                 return false;
             }
@@ -91,8 +99,10 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             switch (type) {
                 case 'email':
                     if (control && control.value && !this.isValidEmail({ email: control.value })) {
-                        if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.email.invalid;
-                        this.displayFieldError({ control, field, errorElement });
+                        if (!silent) {
+                            if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.email.invalid;
+                            this.displayFieldError({ control, field, errorElement });
+                        }
                         return false;
                     }
                     break;
@@ -100,8 +110,10 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
                 case 'password_repeat': {
                     const comparedTo: EgoFormControl | null = document.getElementById('password') as EgoFormControl;
                     if (comparedTo && (control?.value != comparedTo?.value)) {
-                        if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.password_repeat.unequal;
-                        this.displayFieldError({ control, field, errorElement });
+                        if (!silent) {
+                            if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.password_repeat.unequal;
+                            this.displayFieldError({ control, field, errorElement });
+                        }
                         return false;
                     }
                     break;
@@ -110,16 +122,20 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
                 case 'cuil':
                 case 'cuit':
                     if (control && control.value && !this.isValidCuitCuil({ num: control.value })) {
-                        if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.cuil.invalid;
-                        this.displayFieldError({ control, field, errorElement });
+                        if (!silent) {
+                            if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.cuil.invalid;
+                            this.displayFieldError({ control, field, errorElement });
+                        }
                         return false;
                     }
                     break;
 
                 case 'url':
                     if (control && control.value && !this.isValidUrl({ urlString: control.value })) {
-                        if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.url.invalid;
-                        this.displayFieldError({ control, field, errorElement });
+                        if (!silent) {
+                            if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.url.invalid;
+                            this.displayFieldError({ control, field, errorElement });
+                        }
                         return false;
                     }
                     break;
@@ -128,8 +144,10 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
                     if (control) {
                         const currency: string = control.dataset.currency ? control.dataset.currency : '$';
                         if (control.value == '' || control.value == currency) {
-                            if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.default.empty;
-                            this.displayFieldError({ control, field, errorElement });
+                            if (!silent) {
+                                if (errorElement && this.validationMessages) errorElement.textContent = this.validationMessages.default.empty;
+                                this.displayFieldError({ control, field, errorElement });
+                            }
                             return false;
                         }
                     }
@@ -139,12 +157,14 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
                     if (control && control.hasOwnProperty('checked')) {
                         const checkbox = control as HTMLInputElement;
                         if (!checkbox.checked) {
-                            this.displayFieldError({ control, field, errorElement });
-                            if (errorElement && this.validationMessages && controlName) {
-                                errorElement.textContent = this.validationMessages[controlName] ?
-                                    this.validationMessages[controlName].empty
-                                    :
-                                    this.validationMessages.default.empty;
+                            if (!silent) {
+                                this.displayFieldError({ control, field, errorElement });
+                                if (errorElement && this.validationMessages && controlName) {
+                                    errorElement.textContent = this.validationMessages[controlName] ?
+                                        this.validationMessages[controlName].empty
+                                        :
+                                        this.validationMessages.default.empty;
+                                }
                             }
                             return false;
                         }
@@ -161,8 +181,10 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
                         if (control) {
                             const result = await validation.condition(control.value, controlName);
                             if (!result) {
-                                if (errorElement) errorElement.textContent = validation.message || '';
-                                this.displayFieldError({ control, field, errorElement });
+                                if (!silent) {
+                                    if (errorElement) errorElement.textContent = validation.message || '';
+                                    this.displayFieldError({ control, field, errorElement });
+                                }
                                 return false;
                             }
                         }

@@ -66,7 +66,8 @@ describe('EgoForm', () => {
     it('should validate fields on submit', async () => {
         const validateFieldSpy = vi.spyOn(formInstance.validator, 'validateField');
         submitButton.click();
-        await vi.waitFor(() => expect(validateFieldSpy).toHaveBeenCalledTimes(3));
+        // Fields are validated twice: once for current step validity, once for full form validity
+        await vi.waitFor(() => expect(validateFieldSpy).toHaveBeenCalledTimes(6));
     });
 
     it('should set isValid to false if validation fails', async () => {

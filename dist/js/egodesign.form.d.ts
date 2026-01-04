@@ -66,12 +66,14 @@ export default class EgoForm implements EgoFormInterface {
     onBeforeSubmit: Function | null;
     onBeforeSubmission: Function | null;
     onValidityChange: Function | null;
+    onCurrentStepValidityChange: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;
     stepChanging: boolean;
     disbleStepsTransition: boolean;
     isValid: boolean;
+    isCurrentStepValid: boolean;
     hasFile: boolean;
     resetOnSuccess: boolean;
     resetLoaderOnSuccess: boolean;
@@ -81,9 +83,11 @@ export default class EgoForm implements EgoFormInterface {
     preventSubmit: boolean;
     preventSubmission: boolean;
     debug: boolean;
-    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeValidation, onBeforeSubmit, onBeforeSubmission, onValidityChange, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventValidation, preventSubmit, preventSubmission, disbleStepsTransition, debug }: EgoFormOptions);
+    constructor({ element, classes, submitType, submitDataFormat, submitUrl, requestHeaders, fieldGroups, extraFields, serializerIgnoreList, customValidations, customValidationMessages, onStepChange, onValidationError, onSubmitStart, onSubmitEnd, onSuccess, onError, onBeforeValidation, onBeforeSubmit, onBeforeSubmission, onValidityChange, onCurrentStepValidityChange, resetOnSuccess, resetLoaderOnSuccess, scrollOnError, scrollOnErrorOffset, preventValidation, preventSubmit, preventSubmission, disbleStepsTransition, debug }: EgoFormOptions);
     checkForRequiredFields(): boolean;
     setValidity(isValid: boolean): void;
+    setCurrentStepValidity(isValid: boolean): void;
+    validateAllFields(): Promise<boolean>;
     submit(): void;
     resumeSubmit(): void;
     resumeValidation(): Promise<void>;

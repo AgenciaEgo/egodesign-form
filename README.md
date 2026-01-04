@@ -76,10 +76,11 @@ const myForm = new EgoForm({
             "invalid": "message",
         }
     },
-    onStepChange: (previous, next) => console.log(current, next),
+    onStepChange: (previous, next) => console.log(previous, next),
     onBeforeValidation: instance => instance.resumeValidation(),
-    onValidationError: fields => console.log(fields),
-    onValidityChange: (isValid, formInstance)) => console.log(isValid),
+    onValidationError: (fields, instance) => console.log(fields),
+    onValidityChange: (isValid, instance) => console.log('Full form validity:', isValid),
+    onCurrentStepValidityChange: (isValid, currentStep, instance) => console.log(`Step ${currentStep} validity:`, isValid),
     onSubmitStart: () => console.log('Submit start'),
     onBeforeSubmission: instance => instance.resumeSubmission(),
     onSubmitEnd: () => console.log('Submit end'),
@@ -138,8 +139,9 @@ const myForm: EgoForm = new EgoForm({
     },
     onStepChange: (prev: string, next: string) => console.log(prev, next),
     onBeforeValidation: (instance: EgoForm) => instance.resumeValidation(),
-    onValidationError: (fields: string[], instance: EgoForm) => console.log(instance, fields),
-    onValidityChange: (isValid: boolean, instance: EgoForm)) => console.log(isValid),
+    onValidationError: (fields: string[], instance: EgoForm) => console.log(fields),
+    onValidityChange: (isValid: boolean, instance: EgoForm) => console.log('Full form validity:', isValid),
+    onCurrentStepValidityChange: (isValid: boolean, currentStep: number, instance: EgoForm) => console.log(`Step ${currentStep} validity:`, isValid),
     onSubmitStart: () => console.log('Submit start'),
     onBeforeSubmission: (instance: EgoForm) => instance.resumeSubmission(),
     onSubmitEnd: () => console.log('Submit end'),
@@ -251,13 +253,70 @@ const myForm: EgoForm = new EgoForm({
 | --- | ----------- | ----------- |
 | *onStepChange* | Event triggered every time there's a step change. Only available for stepped forms. It returns the previous and the next steps. | An anonymous function or `null`.
 | *onValidationError* | Event triggered when there's any validation error. The callback function receives an array containing the names of invalid fields and a reference to the instance itself. | An anonymous function or `null`.
-| *onValidityChange* | Event triggered when the validity of the form changes. | An anonymous function or `null`.
+| *onValidityChange* | Event triggered when the validity of the **entire form** changes (all fields). Receives `isValid` (boolean) and the form instance. Useful for tracking overall form validity and enabling/disabling final submit buttons. | An anonymous function or `null`.
+| *onCurrentStepValidityChange* | Event triggered when the validity of the **current step** changes. Only relevant for multi-step forms. Receives `isValid` (boolean), `currentStep` (number), and the form instance. Useful for enabling/disabling "Next" buttons in multi-step forms. | An anonymous function or `null`.
 | *onBeforeValidation* | Event triggered before the validation starts. The callback function receives a reference to the instance itself | An anonymous function or `null`.
 | *onSubmitStart* | Event triggered when the submit starts. | An anonymous function or `null`.
 | *onBeforeSubmission* | Event triggered before the submission starts, right after successful validation. The callback function receives a reference to the instance itself | An anonymous function or `null`.
 | *onSubmitEnd* | Event triggered when the submit ends, regardless of the outcome. | An anonymous function or `null`.
 | *onSuccess* | Event triggered when the request results successful. | An anonymous function or `null`.
 | *onError* | Event triggered when the response returns an error. | An anonymous function or `null`.
+<br>
+
+### Validity Tracking
+
+EgoForm provides two separate validity tracking systems to give you fine-grained control over form state:
+
+#### Properties
+- **`isValid`**: Tracks the validity of **all fields** in the entire form, regardless of the current step in multi-step forms.
+- **`isCurrentStepValid`**: Tracks the validity of the current step (or all visited steps up to the current one in multi-step forms).
+
+#### Events
+- **`onValidityChange`**: Fires when `isValid` changes. Useful for:
+  - Enabling/disabling the final submit button
+  - Showing overall form progress indicators
+  - Tracking complete form validity in analytics
+
+- **`onCurrentStepValidityChange`**: Fires when `isCurrentStepValid` changes. Useful for:
+  - Enabling/disabling "Next" buttons in multi-step forms
+  - Showing step-specific validation feedback
+  - Tracking step completion progress
+
+#### Multi-Step Forms
+In multi-step forms, both validity states are tracked independently:
+- `isCurrentStepValid` represents validation of fields up to the highest visited step
+- `isValid` represents validation of ALL fields in the entire form
+- When changing steps, `onCurrentStepValidityChange` fires with the step validity
+- Both properties are updated on blur validation and form submission
+
+#### Regular Forms
+In regular (single-step) forms, both properties behave identically since there's only one "step".
+
+#### Example Usage
+
+```javascript
+const form = new EgoForm({
+    element: document.querySelector('#myMultiStepForm'),
+
+    // Track overall form validity (all fields)
+    onValidityChange: (isValid, formInstance) => {
+        const submitBtn = document.querySelector('#finalSubmit');
+        submitBtn.disabled = !isValid;
+        console.log('Form is', isValid ? 'valid' : 'invalid');
+    },
+
+    // Track current step validity
+    onCurrentStepValidityChange: (isValid, currentStep, formInstance) => {
+        const nextBtn = document.querySelector('#nextStepBtn');
+        nextBtn.disabled = !isValid;
+        console.log(`Step ${currentStep} is`, isValid ? 'valid' : 'invalid');
+    }
+});
+
+// You can also access the properties directly
+console.log(form.isValid); // true/false - entire form
+console.log(form.isCurrentStepValid); // true/false - current step
+```
 <br>
 
 ### Validation:

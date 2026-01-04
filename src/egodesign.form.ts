@@ -68,12 +68,14 @@ export default class EgoForm implements EgoFormInterface {
     // For backward compatibility 1.8
     onBeforeSubmission: Function | null;
     onValidityChange: Function | null;
+    onCurrentStepValidityChange: Function | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;
     stepChanging: boolean;
     disbleStepsTransition: boolean;
     isValid: boolean;
+    isCurrentStepValid: boolean;
     hasFile: boolean;
     resetOnSuccess: boolean;
     resetLoaderOnSuccess: boolean;
@@ -106,6 +108,7 @@ export default class EgoForm implements EgoFormInterface {
         onBeforeSubmit,
         onBeforeSubmission,
         onValidityChange,
+        onCurrentStepValidityChange,
         resetOnSuccess,
         resetLoaderOnSuccess,
         scrollOnError,
@@ -136,6 +139,7 @@ export default class EgoForm implements EgoFormInterface {
             ...classes
         }
         this.isValid = true;
+        this.isCurrentStepValid = true;
         this.validator = new EgoFormValidator({
             customValidations: customValidations || {},
             classes: this.classes,
@@ -152,6 +156,7 @@ export default class EgoForm implements EgoFormInterface {
         this.onBeforeSubmit = onBeforeSubmit ?? null;
         this.onBeforeSubmission = onBeforeSubmission ?? null;
         this.onValidityChange = onValidityChange ?? null;
+        this.onCurrentStepValidityChange = onCurrentStepValidityChange ?? null;
         this.fieldGroups = fieldGroups ?? null;
         this.extraFields = extraFields ?? [];
         this.hasFile = false;
@@ -174,7 +179,10 @@ export default class EgoForm implements EgoFormInterface {
         this.declareHandlers();
         if (!this.actionUrl || this.actionUrl === '') throw new Error("The form doesn't have an action attribute or submitUrl wasn't provided.");
 
-        if (this.checkForRequiredFields()) this.isValid = false;
+        if (this.checkForRequiredFields()) {
+            this.setValidity(false);
+            this.setCurrentStepValidity(false);
+        }
 
         if (this.debug) showLog('initialized!');
     }
@@ -191,6 +199,30 @@ export default class EgoForm implements EgoFormInterface {
                 this.onValidityChange(isValid, this);
             }
         }
+    }
+
+    setCurrentStepValidity(isValid: boolean) {
+        if (this.isCurrentStepValid !== isValid) {
+            this.isCurrentStepValid = isValid;
+            if (typeof this.onCurrentStepValidityChange === 'function') {
+                this.onCurrentStepValidityChange(isValid, this.currentStep, this);
+            }
+        }
+    }
+
+    async validateAllFields(): Promise<boolean> {
+        let isValid = true;
+        const fieldsToValidate: HTMLElement[] = Array.from(this.form.querySelectorAll<HTMLElement>(`.form__field`));
+
+        for (const field of fieldsToValidate) {
+            const fieldValid: boolean = await this.validator.validateField({ field, silent: true });
+            if (!fieldValid) {
+                isValid = false;
+            }
+        }
+
+        this.setValidity(isValid);
+        return isValid;
     }
 
     submit() {
@@ -218,7 +250,7 @@ export default class EgoForm implements EgoFormInterface {
         this.submittingForm({ submitting: true });
 
         // Validate each required field
-        let isValid = true;
+        let isCurrentStepValid = true;
         const invalidFields: string[] = [];
 
         // If multi-step form, only validate fields up to the highest visited step
@@ -247,13 +279,16 @@ export default class EgoForm implements EgoFormInterface {
             if (!fieldValid) {
                 const thisControl: EgoFormControl | null = field.querySelector('.form__control');
                 if (thisControl) invalidFields.push(thisControl.name);
-                isValid = false;
+                isCurrentStepValid = false;
             }
         }
 
-        this.setValidity(isValid);
+        this.setCurrentStepValidity(isCurrentStepValid);
 
-        if (!this.isValid) {
+        // Also validate all fields for full form validity
+        await this.validateAllFields();
+
+        if (!this.isCurrentStepValid) {
             if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
             if (this.debug) showLog(`this fields have failed validation: ${invalidFields.toString().replace(/,/g, ', ')}.`);
 
@@ -437,9 +472,12 @@ export default class EgoForm implements EgoFormInterface {
                     }
                 }
 
-                this.setValidity(isValid);
+                this.setCurrentStepValidity(isValid);
 
-                if (!this.isValid) {
+                // Also validate all fields to update full form validity
+                await this.validateAllFields();
+
+                if (!isValid) {
                     this.stepChanging = false;
                     if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
                 }
@@ -592,8 +630,9 @@ export default class EgoForm implements EgoFormInterface {
         this.form.querySelectorAll<HTMLElement>(`.form__field.${this.classes.validateOnBlur}`)
             .forEach(field => {
                 field.querySelector('.form__control')?.addEventListener('blur', async () => {
-                    const fieldValid: boolean = await this.validator.validateField({ field });
-                    if (!fieldValid) this.setValidity(false);
+                    await this.validator.validateField({ field });
+                    // Re-validate all fields to update full form validity
+                    await this.validateAllFields();
                 });
             });
 
