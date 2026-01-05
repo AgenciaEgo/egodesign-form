@@ -178,7 +178,8 @@ export default class EgoFormValidator implements EgoFormValidatorInterface {
             for (const customType of customTypes) {
                 if (type === customType) {
                     for (const validation of this.customValidations[type]) {
-                        if (control) {
+                        // Only run custom validations if field has a value (like built-in validations)
+                        if (control && control.value) {
                             const result = await validation.condition(control.value, controlName);
                             if (!result) {
                                 if (!silent) {

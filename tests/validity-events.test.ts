@@ -387,6 +387,134 @@ describe('EgoForm Validity Events', () => {
         });
     });
 
+    describe('Required-If-Filled with Custom Validations', () => {
+        it('should not run custom validation on empty required-if-filled field', async () => {
+            const customValidationMock = vi.fn().mockResolvedValue(true);
+
+            document.body.innerHTML = `
+                <form id="testForm" action="/submit" method="POST">
+                    <div class="form__field --required-if-filled" data-type="customType">
+                        <input type="text" name="optional" class="form__control" />
+                        <p class="form__error"></p>
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            `;
+
+            const formElement = document.getElementById('testForm') as HTMLFormElement;
+            const formInstance = new EgoForm({
+                element: formElement,
+                submitType: 'fetch',
+                debug: false,
+                customValidations: {
+                    customType: [{
+                        name: 'test',
+                        condition: customValidationMock,
+                        message: 'Custom validation failed'
+                    }]
+                }
+            });
+
+            // Field is empty, should not run custom validation
+            await formInstance.validateAllFields();
+
+            expect(customValidationMock).not.toHaveBeenCalled();
+            expect(formInstance.isValid).toBe(true);
+        });
+
+        it('should run custom validation on filled required-if-filled field', async () => {
+            const customValidationMock = vi.fn().mockResolvedValue(false);
+
+            document.body.innerHTML = `
+                <form id="testForm" action="/submit" method="POST">
+                    <div class="form__field --required-if-filled" data-type="customType">
+                        <input type="text" name="optional" class="form__control" />
+                        <p class="form__error"></p>
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            `;
+
+            const formElement = document.getElementById('testForm') as HTMLFormElement;
+            const formInstance = new EgoForm({
+                element: formElement,
+                submitType: 'fetch',
+                debug: false,
+                customValidations: {
+                    customType: [{
+                        name: 'test',
+                        condition: customValidationMock,
+                        message: 'Custom validation failed'
+                    }]
+                }
+            });
+
+            const optionalField = formElement.querySelector('input[name="optional"]') as HTMLInputElement;
+            optionalField.value = 'some value';
+
+            // Field has value, should run custom validation
+            await formInstance.validateAllFields();
+
+            expect(customValidationMock).toHaveBeenCalledWith('some value', 'optional');
+            expect(formInstance.isValid).toBe(false);
+        });
+
+        it('should not show errors in silent mode for required-if-filled with custom validation', async () => {
+            const customValidationMock = vi.fn().mockResolvedValue(false);
+
+            document.body.innerHTML = `
+                <form id="testForm" action="/submit" method="POST">
+                    <fieldset class="form__step --active" data-step="1">
+                        <div class="form__field --required">
+                            <input type="text" name="step1" class="form__control" />
+                            <p class="form__error"></p>
+                        </div>
+                        <button type="button" class="form__next-step">Next</button>
+                    </fieldset>
+                    <fieldset class="form__step" data-step="2">
+                        <div class="form__field --required-if-filled" data-type="coupon">
+                            <input type="text" name="coupon" class="form__control" />
+                            <p class="form__error"></p>
+                        </div>
+                    </fieldset>
+                    <button type="submit">Submit</button>
+                </form>
+            `;
+
+            const formElement = document.getElementById('testForm') as HTMLFormElement;
+            const formInstance = new EgoForm({
+                element: formElement,
+                submitType: 'fetch',
+                disbleStepsTransition: true,
+                debug: false,
+                customValidations: {
+                    coupon: [{
+                        name: 'validate',
+                        condition: customValidationMock,
+                        message: 'Invalid coupon'
+                    }]
+                }
+            });
+
+            // Fill step 1 and move to step 2
+            const step1Field = formElement.querySelector('input[name="step1"]') as HTMLInputElement;
+            step1Field.value = 'Step 1';
+
+            // Fill the coupon field with invalid value
+            const couponField = formElement.querySelector('input[name="coupon"]') as HTMLInputElement;
+            couponField.value = 'INVALID';
+
+            await formInstance.nextStep();
+
+            // validateAllFields runs silently, should not show error on coupon field
+            const couponFieldContainer = formElement.querySelector('.form__step[data-step="2"] .form__field') as HTMLElement;
+            expect(couponFieldContainer.classList.contains('--has-error')).toBe(false);
+
+            // But form should know it's invalid
+            expect(formInstance.isValid).toBe(false);
+        });
+    });
+
     describe('Edge Cases', () => {
         it('should handle form with no required fields', () => {
             document.body.innerHTML = `
