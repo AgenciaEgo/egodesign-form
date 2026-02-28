@@ -241,6 +241,118 @@ describe('EgoForm --required-if-filled Validation in Multi-step Forms', () => {
     });
 });
 
+describe('EgoForm onBeforeStepChange', () => {
+    let formElement: HTMLFormElement;
+    let formInstance: EgoForm;
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <form id="testForm" action="/submit" method="POST">
+                <fieldset class="form__step --active" data-step="1">
+                    <div class="form__field --required">
+                        <input type="text" name="name" class="form__control" />
+                        <p class="form__error"></p>
+                    </div>
+                    <button type="button" class="form__next-step">Next</button>
+                </fieldset>
+                <fieldset class="form__step" data-step="2">
+                    <div class="form__field --required">
+                        <input type="text" name="lastname" class="form__control" />
+                        <p class="form__error"></p>
+                    </div>
+                    <button type="button" class="form__prev-step">Prev</button>
+                    <button type="button" class="form__next-step">Next</button>
+                </fieldset>
+                <fieldset class="form__step" data-step="3">
+                    <button type="button" class="form__prev-step">Prev</button>
+                </fieldset>
+                <button type="submit">Submit</button>
+            </form>
+        `;
+        formElement = document.getElementById('testForm') as HTMLFormElement;
+    });
+
+    it('should allow step change when onBeforeStepChange returns true', async () => {
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+            onBeforeStepChange: () => true,
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(formInstance.currentStep).toBe(2);
+    });
+
+    it('should block next step when onBeforeStepChange returns false', async () => {
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+            onBeforeStepChange: () => false,
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(formInstance.currentStep).toBe(1);
+    });
+
+    it('should block prev step when onBeforeStepChange returns false', async () => {
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+            onBeforeStepChange: vi.fn().mockReturnValueOnce(true).mockReturnValueOnce(false),
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(formInstance.currentStep).toBe(2);
+        await formInstance.prevStep();
+        expect(formInstance.currentStep).toBe(2);
+    });
+
+    it('should receive current and next step numbers as strings', async () => {
+        const callback = vi.fn().mockReturnValue(true);
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+            onBeforeStepChange: callback,
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(callback).toHaveBeenCalledWith('1', '2', formInstance);
+    });
+
+    it('should not block step change when onBeforeStepChange is not set', async () => {
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(formInstance.currentStep).toBe(2);
+    });
+
+    it('should reset stepChanging flag when blocked', async () => {
+        formInstance = new EgoForm({
+            element: formElement,
+            submitType: 'fetch',
+            disbleStepsTransition: true,
+            onBeforeStepChange: () => false,
+        });
+        const nameField = document.querySelector('.form__control[name="name"]') as HTMLInputElement;
+        nameField.value = 'John';
+        await formInstance.nextStep();
+        expect(formInstance.stepChanging).toBe(false);
+    });
+});
+
 describe('EgoForm Highest Visited Step Tracking', () => {
     let formElement: HTMLFormElement;
     let formInstance: EgoForm;

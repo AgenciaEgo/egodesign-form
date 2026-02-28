@@ -37,17 +37,18 @@ interface EgoFormOptions {
     serializerIgnoreList?: string[];
     customValidations?: Record<string, EgoFormCustomValidation[]>;
     customValidationMessages?: EgoFormValidationMessages;
-    onStepChange?: Function;
-    onValidationError?: Function;
-    onSubmitStart?: Function;
-    onSubmitEnd?: Function;
-    onSuccess?: Function;
-    onError?: Function;
-    onBeforeValidation?: Function;
-    onBeforeSubmit?: Function; // For backward compatibility 1.8
-    onBeforeSubmission?: Function;
-    onValidityChange?: Function;
-    onCurrentStepValidityChange?: Function;
+    onBeforeStepChange?: (currentStep: string, nextStep: string, instance: any) => boolean;
+    onStepChange?: (currentStep: string, nextStep: string) => void;
+    onValidationError?: (fields: string[], instance: any) => void;
+    onSubmitStart?: () => void;
+    onSubmitEnd?: () => void;
+    onSuccess?: (response: Response) => void;
+    onError?: (error: Response | Error) => void;
+    onBeforeValidation?: (instance: any) => void;
+    onBeforeSubmit?: (instance: any) => void; // For backward compatibility 1.8
+    onBeforeSubmission?: (instance: any) => void;
+    onValidityChange?: (isValid: boolean, instance: any) => void;
+    onCurrentStepValidityChange?: (isValid: boolean, step: number, instance: any) => void;
     disbleStepsTransition?: boolean;
     resetOnSuccess?: boolean;
     resetLoaderOnSuccess?: boolean;
@@ -72,17 +73,18 @@ interface EgoFormInterface {
     extraFields: { name: string, value: string }[];
     serializerIgnoreList: string[];
     validator: any;
-    onStepChange: Function | null;
-    onValidationError: Function | null;
-    onSubmitStart: Function | null;
-    onSubmitEnd: Function | null;
-    onSuccess: Function | null;
-    onError: Function | null;
-    onBeforeValidation: Function | null;
-    onBeforeSubmit: Function | null; // For backward compatibility 1.8
-    onBeforeSubmission: Function | null;
-    onValidityChange: Function | null;
-    onCurrentStepValidityChange: Function | null;
+    onBeforeStepChange: ((currentStep: string, nextStep: string, instance: any) => boolean) | null;
+    onStepChange: ((currentStep: string, nextStep: string) => void) | null;
+    onValidationError: ((fields: string[], instance: any) => void) | null;
+    onSubmitStart: (() => void) | null;
+    onSubmitEnd: (() => void) | null;
+    onSuccess: ((response: Response) => void) | null;
+    onError: ((error: Response | Error) => void) | null;
+    onBeforeValidation: ((instance: any) => void) | null;
+    onBeforeSubmit: ((instance: any) => void) | null; // For backward compatibility 1.8
+    onBeforeSubmission: ((instance: any) => void) | null;
+    onValidityChange: ((isValid: boolean, instance: any) => void) | null;
+    onCurrentStepValidityChange: ((isValid: boolean, step: number, instance: any) => void) | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;

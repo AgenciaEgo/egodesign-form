@@ -56,19 +56,20 @@ export default class EgoForm implements EgoFormInterface {
     extraFields: { name: string, value: string }[];
     serializerIgnoreList: string[];
     validator: any;
-    onStepChange: Function | null;
-    onValidationError: Function | null;
-    onSubmitStart: Function | null;
-    onSubmitEnd: Function | null;
-    onSuccess: Function | null;
-    onError: Function | null;
-    onBeforeValidation: Function | null;
+    onBeforeStepChange: ((currentStep: string, nextStep: string, instance: EgoForm) => boolean) | null;
+    onStepChange: ((currentStep: string, nextStep: string) => void) | null;
+    onValidationError: ((fields: string[], instance: EgoForm) => void) | null;
+    onSubmitStart: (() => void) | null;
+    onSubmitEnd: (() => void) | null;
+    onSuccess: ((response: Response) => void) | null;
+    onError: ((error: Response | Error) => void) | null;
+    onBeforeValidation: ((instance: EgoForm) => void) | null;
     // For backward compatibility 1.8
-    onBeforeSubmit: Function | null;
+    onBeforeSubmit: ((instance: EgoForm) => void) | null;
     // For backward compatibility 1.8
-    onBeforeSubmission: Function | null;
-    onValidityChange: Function | null;
-    onCurrentStepValidityChange: Function | null;
+    onBeforeSubmission: ((instance: EgoForm) => void) | null;
+    onValidityChange: ((isValid: boolean, instance: EgoForm) => void) | null;
+    onCurrentStepValidityChange: ((isValid: boolean, step: number, instance: EgoForm) => void) | null;
     currentStep: number;
     currentStepOptional: boolean;
     highestVisitedStep: number;
@@ -98,6 +99,7 @@ export default class EgoForm implements EgoFormInterface {
         serializerIgnoreList,
         customValidations,
         customValidationMessages,
+        onBeforeStepChange,
         onStepChange,
         onValidationError,
         onSubmitStart,
@@ -147,6 +149,7 @@ export default class EgoForm implements EgoFormInterface {
             debug: debug ?? false
         });
         this.onValidationError = onValidationError ?? null;
+        this.onBeforeStepChange = onBeforeStepChange ?? null;
         this.onStepChange = onStepChange ?? null;
         this.onSubmitStart = onSubmitStart ?? null;
         this.onSubmitEnd = onSubmitEnd ?? null;
@@ -482,6 +485,14 @@ export default class EgoForm implements EgoFormInterface {
                     if (typeof this.onValidationError === 'function') this.onValidationError(invalidFields, this);
                 }
                 else if (currentElement && nextElement) {
+                    if (typeof this.onBeforeStepChange === 'function') {
+                        const result = this.onBeforeStepChange(current.toString(), nextStepNumber.toString(), this);
+                        if (result === false) {
+                            this.stepChanging = false;
+                            return;
+                        }
+                    }
+
                     const resumeNextStep = () => {
                         nextElement.classList.add('--active');
                         this.stepChanging = false;
