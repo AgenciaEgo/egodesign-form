@@ -40,6 +40,11 @@
         "vitest": "^3.0.7"
     },
     "files": [
-        "dist"
-    ]
+        "dist/",
+        "README.md"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    }
 }
